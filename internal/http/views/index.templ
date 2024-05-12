@@ -1,0 +1,15 @@
+package views
+
+templ Index() {
+<body class="flex flex-col min-h-screen">
+  @Header()
+  <main class="flex-1 bg-gray-100 dark:bg-gray-950 py-12">
+    <div class="container mx-auto px-4">
+      <div>Hello World</div>
+      <a href="/auth/twitch">Authenticate with twitch</a>
+      <a href="/twitch">Go to twitch dashboard</a>
+    </div>
+  </main>
+  @Footer()
+</body>
+}

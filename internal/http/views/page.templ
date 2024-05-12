@@ -1,0 +1,46 @@
+package views
+
+templ Head(title string) {
+	<head>
+		<title>{ title }</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="robots" content="index, follow"/>
+		<meta name="revisit-after" content="7 days"/>
+		<meta name="language" content="English"/>
+		<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['Courier Prime', 'monospace'],
+          }
+        },
+      },
+    }
+  </script>
+		@wsHotReload()
+	</head>
+}
+
+templ Page(title string, body templ.Component) {
+	<!DOCTYPE html>
+	<html>
+		@Head(title)
+		@body
+	</html>
+}
+
+templ BaseBody(main templ.Component) {
+	<body class="flex flex-col min-h-screen">
+		@Header()
+		<main class="flex-1 bg-gray-100 dark:bg-gray-950 py-12">
+			<div class="container mx-auto px-4">
+				@main
+			</div>
+		</main>
+		@Footer()
+	</body>
+}

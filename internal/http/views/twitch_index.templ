@@ -1,0 +1,19 @@
+package views
+
+templ TwitchIndex() {
+	<body class="flex flex-col min-h-screen">
+		@Header()
+		<main class="flex-1 bg-gray-100 dark:bg-gray-950 py-12">
+			<div class="container mx-auto px-4">
+				<div>Twitch Stuff</div>
+				<form action="/api/services/twitch/chat" method="post">
+					<button type="submit">Enable Chat Service</button>
+				</form>
+				<form action="/api/services/twitch/chat" method="delete">
+					<button type="submit">Disable Chat Service</button>
+				</form>
+			</div>
+		</main>
+		@Footer()
+	</body>
+}
