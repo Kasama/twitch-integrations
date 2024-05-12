@@ -1,11 +1,19 @@
 package modules
 
 import (
+	"log"
+
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
+	"github.com/gempir/go-twitch-irc/v4"
 )
 
 type DiceModule struct {
 	rolls int
+}
+
+// Register implements events.EventHandler.
+func (m *DiceModule) Register() {
+	events.Register(m.handleRoll)
 }
 
 func NewDiceModule() *DiceModule {
@@ -16,12 +24,11 @@ func NewDiceModule() *DiceModule {
 
 var _ events.EventHandler = &DiceModule{}
 
-func (dm *DiceModule) ShouldHandle(_ *events.EventContext, event *events.Event) bool {
-	return event.Kind == events.EventKindChatMessage && event.ChatMessage.Message == "!roll"
-}
-
-func (dm *DiceModule) HandleEvent(ctx *events.EventContext, event *events.Event) error {
-	ctx.Logger.Printf("Rolling dice for the %d time", dm.rolls)
+func (dm *DiceModule) handleRoll(message *twitch.PrivateMessage) error {
+	if message.Message != "!roll" {
+		return nil
+	}
+	log.Default().Printf("Rolling dice for the %d time", dm.rolls)
 	dm.rolls = dm.rolls + 1
 	return nil
 }

@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/global"
+	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/gempir/go-twitch-irc/v4"
 )
 
@@ -16,34 +17,30 @@ func NewTwitchChatService(channel string) *TwitchChatService {
 	}
 }
 
+type EventConnected struct{}
+
 // Start implements events.EventEmitter.
-func (t *TwitchChatService) Start(dispatcher *events.EventDispatcher) chan struct{} {
+func (t *TwitchChatService) Start() chan struct{} {
 	token := global.Global.GetTwitchToken()
 	if token == nil {
 		return nil
 	}
 	exit := make(chan struct{})
 
-	l := dispatcher.Context.Logger
 	client := twitch.NewClient(t.channel, "oauth:"+token.AccessToken)
 
 	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
-		dispatcher.Dispatch(&events.Event{
-			Kind:        events.EventKindChatMessage,
-			ChatMessage: &message,
-		})
+		events.Dispatch(&message)
 	})
 
 	client.OnConnect(func() {
-		dispatcher.Dispatch(&events.Event{
-			Kind: events.EventKindConnected,
-		})
-		l.Println("Chat Connected")
+		events.Dispatch(EventConnected{})
+		logger.Debug("Chat Connected")
 	})
 
 	client.Capabilities = []string{twitch.TagsCapability, twitch.MembershipCapability, twitch.CommandsCapability}
 
-	l.Println("Joining chat")
+	logger.Debug("Joining chat")
 	client.Join(t.channel)
 
 	go func() {
@@ -52,17 +49,14 @@ func (t *TwitchChatService) Start(dispatcher *events.EventDispatcher) chan struc
 	}()
 
 	go func() {
-		l.Println("Connecting chat")
+		logger.Debug("Connecting chat")
 		err := client.Connect()
 		if err != nil {
-			l.Fatal(err)
+			logger.Fatal(err)
 		}
 	}()
 
-	dispatcher.Dispatch(&events.Event{
-		Kind:                          events.EventKindChatClientCreated,
-		ChatClientCreated:             client,
-	})
+	events.Dispatch(client)
 
 	return exit
 }

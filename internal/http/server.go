@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/global"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
@@ -18,7 +17,6 @@ type Handlers struct {
 	server           *echo.Echo
 	logger           logger.Logger
 	environment      string
-	eventsDispatcher *events.EventDispatcher
 	twitchConfig     *twitch.TwitchConfig
 }
 
@@ -31,12 +29,11 @@ func Render(c echo.Context, statusCode int, t templ.Component) error {
 	return t.Render(c.Request().Context(), c.Response().Writer)
 }
 
-func NewHandlers(env string, twitchConfig *twitch.TwitchConfig, dispatcher *events.EventDispatcher) *Handlers {
+func NewHandlers(env string, twitchConfig *twitch.TwitchConfig) *Handlers {
 	return &Handlers{
 		server:           echo.New(),
 		logger:           logger.New("twitch_helper", log.DEBUG),
 		environment:      env,
-		eventsDispatcher: dispatcher,
 		twitchConfig:     twitchConfig,
 	}
 }
@@ -73,7 +70,7 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.Use(updateCookieAuth)
 	h.server.Use(middleware.Recover())
 
-	twitchHandler := NewTwitchHandler(h.twitchConfig, h.eventsDispatcher)
+	twitchHandler := NewTwitchHandler(h.twitchConfig)
 
 	// Api routes
 	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusOK) })

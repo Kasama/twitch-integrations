@@ -9,16 +9,11 @@ type SpotifyModule struct {
 	client *spotify.Client
 }
 
+func (*SpotifyModule) Register() {
+}
+
 func NewSpotifyModule(clientID, clientSecret string) *SpotifyModule {
-	return &SpotifyModule{ }
-}
-
-func (*SpotifyModule) HandleEvent(ctx *events.EventContext, event *events.Event) error {
-	panic("unimplemented")
-}
-
-func (*SpotifyModule) ShouldHandle(ctx *events.EventContext, event *events.Event) bool {
-	return event.Kind == events.EventKindChannelPointsRewardRedemption && event.ChannelPointsRewardRedemption.Reward.Title == "Pede uma musica"
+	return &SpotifyModule{}
 }
 
 var _ events.EventHandler = &SpotifyModule{}

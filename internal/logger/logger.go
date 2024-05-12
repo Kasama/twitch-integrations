@@ -12,6 +12,44 @@ const RESET = "\u001b[0m"
 const CYAN = "\u001b[36m"
 const GREEN = "\u001b[32m"
 
+var l = log.New("twitch-intgrations")
+
+func init() {
+	l.SetLevel(log.DEBUG)
+}
+
+func Debug(message ...any) {
+	l.Debug(message...)
+}
+
+func Debugf(format string, message ...any) {
+	l.Debugf(format, message...)
+}
+
+func Print(message ...any) {
+	l.Print(message...)
+}
+
+func Printf(format string, message ...any) {
+	l.Printf(format, message...)
+}
+
+func Error(message ...any) {
+	l.Error(message...)
+}
+
+func Errorf(format string, message ...any) {
+	l.Errorf(format, message...)
+}
+
+func Fatal(message ...any) {
+	l.Fatal(message...)
+}
+
+func Fatalf(format string, message ...any) {
+	l.Fatalf(format, message...)
+}
+
 type Logger interface {
 	Info(message ...any)
 	Infof(format string, args ...any)

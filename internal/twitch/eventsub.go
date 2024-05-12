@@ -1,12 +1,14 @@
 package twitch
 
 import (
+	"log"
+
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/joeyak/go-twitch-eventsub/v2"
 )
 
-func SetupEventSub(clientID, accessToken, userID string, dispatcher *events.EventDispatcher) {
-	l := dispatcher.Context.Logger
+func SetupEventSub(clientID, accessToken, userID string) {
+	l := log.Default()
 	client := twitch.NewClient()
 
 	client.OnError(func(err error) {
@@ -44,10 +46,7 @@ func SetupEventSub(clientID, accessToken, userID string, dispatcher *events.Even
 		l.Printf("NOTIFICATION: %s: %#v\n", message.Payload.Subscription.Type, message.Payload.Event)
 	})
 	client.OnEventChannelChannelPointsCustomRewardRedemptionAdd(func(event twitch.EventChannelChannelPointsCustomRewardRedemptionAdd) {
-		dispatcher.Dispatch(&events.Event{
-			Kind:                          events.EventKindChannelPointsRewardRedemption,
-			ChannelPointsRewardRedemption: &event,
-		})
+		events.Dispatch(event)
 	})
 	client.OnRevoke(func(message twitch.RevokeMessage) {
 		l.Printf("REVOKE: %v\n", message)

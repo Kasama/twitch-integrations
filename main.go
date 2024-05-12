@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/http"
 	"github.com/Kasama/kasama-twitch-integrations/internal/modules"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
@@ -43,10 +42,6 @@ func main() {
 		environment = "development"
 	}
 
-	dispatcher := events.NewEventDispatcher(events.WithLogger(log.Default()))
-	dispatcher.RegisterHandler(modules.NewDiceModule())
-	dispatcherChannel := dispatcher.StartAsync()
-
 	oauth2Config := &oauth2.Config{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
@@ -71,10 +66,10 @@ func main() {
 	twitchConfig := twitch.NewTwitchConfig(clientId, clientSecret, twitchUserId, twitchUsername, oauth2Config)
 
 	// Register modules
-	dispatcher.RegisterHandler(modules.NewYappingModule(twitchUsername))
+	modules.NewYappingModule(twitchUsername).Register()
+	modules.NewDiceModule().Register()
+	// modules.NewSpotifyModule(spotifyConfig.clientId, spotifyConfig.clientSecret).Register()
 
 	// Start server
-	_ = http.NewHandlers(environment, twitchConfig, dispatcher).Start("localhost", "3000")
-
-	<-dispatcherChannel
+	_ = http.NewHandlers(environment, twitchConfig).Start("localhost", "3000")
 }

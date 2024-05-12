@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/global"
 	"github.com/Kasama/kasama-twitch-integrations/internal/http/views"
 	"github.com/Kasama/kasama-twitch-integrations/internal/services"
@@ -68,15 +67,13 @@ func SaveToCookies(c echo.Context, t *twitch.TwitchAuth) {
 
 type TwitchHandler struct {
 	twitchConfig     *twitch.TwitchConfig
-	eventsDispatcher *events.EventDispatcher
 	chatService      *services.TwitchChatService
 	chatServiceExit  chan struct{}
 }
 
-func NewTwitchHandler(twitchConfig *twitch.TwitchConfig, eventsDispatcher *events.EventDispatcher) *TwitchHandler {
+func NewTwitchHandler(twitchConfig *twitch.TwitchConfig) *TwitchHandler {
 	return &TwitchHandler{
 		twitchConfig:     twitchConfig,
-		eventsDispatcher: eventsDispatcher,
 	}
 }
 
@@ -113,7 +110,7 @@ func (t *TwitchHandler) handleEnableChatService(c echo.Context) error {
 	}
 
 	service := services.NewTwitchChatService(t.twitchConfig.Channel)
-	exit := service.Start(t.eventsDispatcher)
+	exit := service.Start()
 	if exit == nil {
 		return Render(c, http.StatusInternalServerError, views.Flash("Chat service could not be started"))
 	}
