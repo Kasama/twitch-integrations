@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Kasama/kasama-twitch-integrations/internal/global"
+	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
 	"github.com/a-h/templ"
@@ -14,10 +14,11 @@ import (
 )
 
 type Handlers struct {
-	server           *echo.Echo
-	logger           logger.Logger
-	environment      string
-	twitchConfig     *twitch.TwitchConfig
+	server       *echo.Echo
+	logger       logger.Logger
+	environment  string
+	twitchConfig *twitch.TwitchConfig
+	twitchAuth   *twitch.TwitchAuth
 }
 
 type State struct {
@@ -31,29 +32,31 @@ func Render(c echo.Context, statusCode int, t templ.Component) error {
 
 func NewHandlers(env string, twitchConfig *twitch.TwitchConfig) *Handlers {
 	return &Handlers{
-		server:           echo.New(),
-		logger:           logger.New("twitch_helper", log.DEBUG),
-		environment:      env,
-		twitchConfig:     twitchConfig,
+		server:       echo.New(),
+		logger:       logger.New("twitch_helper", log.DEBUG),
+		environment:  env,
+		twitchConfig: twitchConfig,
 	}
 }
 
-func loadCookieAuth(next echo.HandlerFunc) echo.HandlerFunc {
+func (h *Handlers) loadCookieAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		auth, err := TwitchAuthFromCookies(c)
 		if err == nil {
-			global.Global.SetTwitchAuth(auth)
+			if h.twitchAuth == nil {
+				events.Dispatch(auth)
+			}
+			h.twitchAuth = auth
 		}
 		return next(c)
 	}
 }
 
-func updateCookieAuth(next echo.HandlerFunc) echo.HandlerFunc {
+func (h *Handlers) updateCookieAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		err := next(c)
-		token := global.Global.GetTwitchToken()
-		if token != nil {
-			SaveToCookies(c, &twitch.TwitchAuth{Token: token})
+		if h.twitchAuth != nil {
+			SaveToCookies(c, h.twitchAuth)
 		}
 		return err
 	}
@@ -66,16 +69,14 @@ func (h *Handlers) Start(address string, port string) error {
 
 func (h *Handlers) RegisterRoutes() {
 	h.server.Use(getLoggerMiddleware(h.logger))
-	h.server.Use(loadCookieAuth)
-	h.server.Use(updateCookieAuth)
+	h.server.Use(h.loadCookieAuth)
+	h.server.Use(h.updateCookieAuth)
 	h.server.Use(middleware.Recover())
 
 	twitchHandler := NewTwitchHandler(h.twitchConfig)
 
 	// Api routes
 	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusOK) })
-	h.server.POST("/api/services/twitch/chat", twitchHandler.handleEnableChatService)
-	h.server.DELETE("/api/services/twitch/chat", twitchHandler.handleDisableChatService)
 	// if h.environment == "development" {
 	// 	h.server.GET("/ws/dev/hot-reload", handleWSHotReload)
 	// }

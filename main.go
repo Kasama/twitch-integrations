@@ -6,6 +6,7 @@ import (
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/http"
 	"github.com/Kasama/kasama-twitch-integrations/internal/modules"
+	"github.com/Kasama/kasama-twitch-integrations/internal/services"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
@@ -42,6 +43,16 @@ func main() {
 		environment = "development"
 	}
 
+	obsAddress, exists := os.LookupEnv("OBS_WS_URL")
+	if !exists {
+		obsAddress = "localhost:4455"
+	}
+
+	obsPassword, exists := os.LookupEnv("OBS_WS_PASSWORD")
+	if !exists {
+		logger.Fatal("var OBS_WS_PASSWORD not found")
+	}
+
 	oauth2Config := &oauth2.Config{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
@@ -69,6 +80,10 @@ func main() {
 	modules.NewYappingModule(twitchUsername).Register()
 	modules.NewDiceModule().Register()
 	// modules.NewSpotifyModule(spotifyConfig.clientId, spotifyConfig.clientSecret).Register()
+
+	// Register services
+	services.NewTwitchChatService(twitchUsername).Register()
+	services.NewOBSService(obsAddress, obsPassword).Register()
 
 	// Start server
 	_ = http.NewHandlers(environment, twitchConfig).Start("localhost", "3000")

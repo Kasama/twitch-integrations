@@ -50,13 +50,22 @@ func (m *YappingModule) handlePrivateMessage(message *twitch.PrivateMessage) err
 	fields := strings.Fields(message.Message)
 	if fields[0] == "!fala" {
 		if len(fields) < 2 {
-			m.twitchClient.Say(m.channel, "Uso: !fala <usuário>")
-			m.twitchClient.Say(m.channel, "Mostra quantas vezes o usuário falou no chat hoje")
+			m.twitchClient.Say(m.channel, "Uso: !fala @<usuário>. Mostra quantas vezes o usuário falou no chat hoje")
 			return nil
 		}
 		user := treatUserName(fields[1])
 		count := m.yapCount[user]
-		m.twitchClient.Say(m.channel, fmt.Sprintf("%s has yapped %d times", user, count))
+
+		message := ""
+		if count == 0 {
+			message = fmt.Sprintf("%s não falou nada hoje", user)
+		} else if count < 10 {
+			message = fmt.Sprintf("%s falou só %d bostas hoje", user, count)
+		} else {
+			message = fmt.Sprintf("%s não para quieto, já foram %d mensagens hoje itskas19Yapping", user, count)
+		}
+
+		m.twitchClient.Say(m.channel, message)
 	}
 	return nil
 }

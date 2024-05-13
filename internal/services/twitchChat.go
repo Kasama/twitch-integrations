@@ -2,34 +2,45 @@ package services
 
 import (
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
-	"github.com/Kasama/kasama-twitch-integrations/internal/global"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
-	"github.com/gempir/go-twitch-irc/v4"
+	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
+	twitchChat "github.com/gempir/go-twitch-irc/v4"
 )
 
 type TwitchChatService struct {
-	channel string
+	channel    string
+	twitchAuth *twitch.TwitchAuth
+	exit       chan struct{}
+}
+
+// Register implements events.EventHandler.
+func (t *TwitchChatService) Register() {
+	events.Register(t.handleToken)
 }
 
 func NewTwitchChatService(channel string) *TwitchChatService {
 	return &TwitchChatService{
-		channel,
+		channel:    channel,
+		twitchAuth: nil,
+		exit:       nil,
 	}
 }
 
 type EventConnected struct{}
 
-// Start implements events.EventEmitter.
-func (t *TwitchChatService) Start() chan struct{} {
-	token := global.Global.GetTwitchToken()
-	if token == nil {
-		return nil
+func (t *TwitchChatService) handleToken(token *twitch.TwitchAuth) error {
+	if t.exit != nil {
+		close(t.exit)
 	}
+
+	t.twitchAuth = token
+
 	exit := make(chan struct{})
+	t.exit = exit
 
-	client := twitch.NewClient(t.channel, "oauth:"+token.AccessToken)
+	client := twitchChat.NewClient(t.channel, "oauth:"+token.AccessToken)
 
-	client.OnPrivateMessage(func(message twitch.PrivateMessage) {
+	client.OnPrivateMessage(func(message twitchChat.PrivateMessage) {
 		events.Dispatch(&message)
 	})
 
@@ -38,7 +49,11 @@ func (t *TwitchChatService) Start() chan struct{} {
 		logger.Debug("Chat Connected")
 	})
 
-	client.Capabilities = []string{twitch.TagsCapability, twitch.MembershipCapability, twitch.CommandsCapability}
+	client.OnUserNoticeMessage(func(message twitchChat.UserNoticeMessage) {
+		events.Dispatch(&message)
+	})
+
+	client.Capabilities = []string{twitchChat.TagsCapability, twitchChat.MembershipCapability, twitchChat.CommandsCapability}
 
 	logger.Debug("Joining chat")
 	client.Join(t.channel)
@@ -52,18 +67,13 @@ func (t *TwitchChatService) Start() chan struct{} {
 		logger.Debug("Connecting chat")
 		err := client.Connect()
 		if err != nil {
-			logger.Fatal(err)
+			logger.Errorf("failed to connect to chat: %v", err)
 		}
 	}()
 
 	events.Dispatch(client)
 
-	return exit
+	return nil
 }
 
-// Stop implements events.EventEmitter.
-func (*TwitchChatService) Stop(exit chan struct{}) {
-	close(exit)
-}
-
-var _ events.EventEmitter = &TwitchChatService{}
+var _ events.EventHandler = &TwitchChatService{}

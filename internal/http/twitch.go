@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Kasama/kasama-twitch-integrations/internal/global"
+	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/http/views"
 	"github.com/Kasama/kasama-twitch-integrations/internal/services"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
@@ -98,40 +98,9 @@ func (t *TwitchHandler) handleRedirect(c echo.Context) error {
 	auth := &twitch.TwitchAuth{Token: token}
 	SaveToCookies(c, auth)
 
-	global.Global.SetTwitchAuth(auth)
+	events.Dispatch[*twitch.TwitchAuth](auth)
 
 	return c.Redirect(http.StatusTemporaryRedirect, "/")
-}
-
-func (t *TwitchHandler) handleEnableChatService(c echo.Context) error {
-
-	if t.chatService != nil {
-		return Render(c, http.StatusBadRequest, views.Flash("Chat service already enabled"))
-	}
-
-	service := services.NewTwitchChatService(t.twitchConfig.Channel)
-	exit := service.Start()
-	if exit == nil {
-		return Render(c, http.StatusInternalServerError, views.Flash("Chat service could not be started"))
-	}
-
-	t.chatService = service
-	t.chatServiceExit = exit
-
-	return c.NoContent(http.StatusOK)
-}
-
-func (t *TwitchHandler) handleDisableChatService(c echo.Context) error {
-
-	if t.chatService == nil {
-		return Render(c, http.StatusBadRequest, views.Flash("Chat service is not enabled"))
-	}
-
-	t.chatService.Stop(t.chatServiceExit)
-	t.chatService = nil
-	t.chatServiceExit = nil
-
-	return c.NoContent(http.StatusOK)
 }
 
 func (t *TwitchHandler) handleIndex(c echo.Context) error {

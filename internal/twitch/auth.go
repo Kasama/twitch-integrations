@@ -11,6 +11,7 @@ import (
 
 type TwitchAuth struct {
 	*oauth2.Token
+	TwitchConfig *TwitchConfig
 }
 
 type TwitchConfig struct {
@@ -31,10 +32,13 @@ func NewTwitchConfig(clientId, clientSecret, userId, channel string, oauth2confi
 	}
 }
 
-func (t *TwitchConfig) RefreshTwitchAuthToken(token *TwitchAuth) (*TwitchAuth, error) {
+func (t *TwitchAuth) RefreshAuthToken() (*TwitchAuth, error) {
+	if t.Token == nil {
+		return t, nil
+	}
 
 	resp, err := http.Post(twitchAuth.Endpoint.TokenURL, "application/x-www-form-urlencoded",
-		strings.NewReader("grant_type=refresh_token&refresh_token="+token.RefreshToken+"&client_id="+t.ClientId+"&client_secret="+t.ClientSecret),
+		strings.NewReader("grant_type=refresh_token&refresh_token="+t.RefreshToken+"&client_id="+t.TwitchConfig.ClientId+"&client_secret="+t.TwitchConfig.ClientSecret),
 	)
 	if err != nil {
 		return nil, err
@@ -53,7 +57,7 @@ func (t *TwitchConfig) RefreshTwitchAuthToken(token *TwitchAuth) (*TwitchAuth, e
 	}
 
 	return &TwitchAuth{
-		Token: newToken,
+		Token:        newToken,
+		TwitchConfig: t.TwitchConfig,
 	}, nil
-
 }

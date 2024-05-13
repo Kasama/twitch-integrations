@@ -14,6 +14,10 @@ const GREEN = "\u001b[32m"
 
 var l = log.New("twitch-intgrations")
 
+func GetLogger() *log.Logger {
+	return l
+}
+
 func init() {
 	l.SetLevel(log.DEBUG)
 }
@@ -177,4 +181,3 @@ func New(prefix string, lvl log.Lvl) Logger {
 
 	return &logger{log: logging, fields: []field{}, fieldFormat: format}
 }
-
