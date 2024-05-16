@@ -16,7 +16,8 @@ type OBSService struct {
 func NewOBSService(address, password string) *OBSService {
 	client, err := goobs.New(address, goobs.WithPassword(password))
 	if err != nil {
-		return nil
+		logger.Errorf("Error connecting to OBS: %s", err)
+		return &OBSService{}
 	}
 	return &OBSService{
 		address:   address,
@@ -27,21 +28,29 @@ func NewOBSService(address, password string) *OBSService {
 
 // Register implements events.EventHandler.
 func (obs *OBSService) Register() {
-	events.Register(obs.handleCurrentScenePreviewSceneChanged)
+	if obs.obsClient == nil {
+		return
+	}
 
-	obs.obsClient.Listen(func(event any) {
-		switch e := event.(type) {
-		case *obsEvents.CurrentPreviewSceneChanged:
-			events.Dispatch(e)
-		case *obsEvents.SceneItemSelected:
-			events.Dispatch(e)
-		}
-	})
-}
+	events.Dispatch(obs.obsClient)
 
-func (obs *OBSService) handleCurrentScenePreviewSceneChanged(e *obsEvents.CurrentPreviewSceneChanged) error {
-	logger.Debugf("Current preview scene changed: %v", e)
-	return nil
+	exit := make(chan struct{})
+
+	go func() {
+		<-exit
+		_ = obs.obsClient.Disconnect()
+	}()
+
+	go func(c *goobs.Client) {
+		c.Listen(func(event any) {
+			switch e := event.(type) {
+			case *obsEvents.CurrentPreviewSceneChanged:
+				events.Dispatch(e)
+			case *obsEvents.SceneItemSelected:
+				events.Dispatch(e)
+			}
+		})
+	}(obs.obsClient)
 }
 
 var _ events.EventHandler = &OBSService{}

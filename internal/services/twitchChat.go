@@ -41,6 +41,7 @@ func (t *TwitchChatService) handleToken(token *twitch.TwitchAuth) error {
 	client := twitchChat.NewClient(t.channel, "oauth:"+token.AccessToken)
 
 	client.OnPrivateMessage(func(message twitchChat.PrivateMessage) {
+		logger.Debugf("Chat Message: %s", message.Message)
 		events.Dispatch(&message)
 	})
 
@@ -60,6 +61,7 @@ func (t *TwitchChatService) handleToken(token *twitch.TwitchAuth) error {
 
 	go func() {
 		<-exit
+		logger.Debug("Got chat exit channel message")
 		_ = client.Disconnect()
 	}()
 
@@ -69,6 +71,7 @@ func (t *TwitchChatService) handleToken(token *twitch.TwitchAuth) error {
 		if err != nil {
 			logger.Errorf("failed to connect to chat: %v", err)
 		}
+		logger.Debug("Disconnecting from chat")
 	}()
 
 	events.Dispatch(client)

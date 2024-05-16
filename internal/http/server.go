@@ -41,7 +41,7 @@ func NewHandlers(env string, twitchConfig *twitch.TwitchConfig) *Handlers {
 
 func (h *Handlers) loadCookieAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		auth, err := TwitchAuthFromCookies(c)
+		auth, err := TwitchAuthFromCookies(c, h.twitchConfig)
 		if err == nil {
 			if h.twitchAuth == nil {
 				events.Dispatch(auth)
@@ -75,17 +75,15 @@ func (h *Handlers) RegisterRoutes() {
 
 	twitchHandler := NewTwitchHandler(h.twitchConfig)
 
-	// Api routes
+	// API routes
 	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusOK) })
-	// if h.environment == "development" {
-	// 	h.server.GET("/ws/dev/hot-reload", handleWSHotReload)
-	// }
 
 	// Web UI routes
 	h.server.GET("/", HandleIndex)
 	h.server.GET("/auth/twitch", twitchHandler.handleAuth)
 	h.server.GET("/auth/twitch/redirect", twitchHandler.handleRedirect)
 	h.server.GET("/twitch", twitchHandler.handleIndex)
+	h.server.GET("/obs/background", HandleObsBackground)
 
 	h.server.Logger.Debug("Routes registered")
 	h.server.Logger.Info(h.server.Routes())
@@ -99,6 +97,9 @@ func getLoggerMiddleware(logger logger.Logger) echo.MiddlewareFunc {
 		LogStatus:   true,
 		LogError:    true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			if c.Path() == "/api/livez" {
+				return nil
+			}
 			logger.
 				WithField("status", v.Status).
 				WithField("error", v.Error).

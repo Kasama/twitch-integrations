@@ -53,6 +53,15 @@ func main() {
 		logger.Fatal("var OBS_WS_PASSWORD not found")
 	}
 
+	t, exists := os.LookupEnv("STREAM_TEMP_DIR")
+	if !exists {
+		t = "twitch-streaming"
+	}
+	tmpDir, err := os.MkdirTemp("", t)
+	if err != nil {
+	  logger.Fatalf("Could not create tempdir %s", tmpDir)
+	}
+
 	oauth2Config := &oauth2.Config{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
@@ -72,6 +81,9 @@ func main() {
 			"whispers:edit",
 			"channel:manage:redemptions",
 			"channel:manage:polls",
+			"moderation:read",
+			"moderator:manage:banned_users",
+			"moderator:manage:chat_messages",
 		},
 	}
 	twitchConfig := twitch.NewTwitchConfig(clientId, clientSecret, twitchUserId, twitchUsername, oauth2Config)
@@ -79,12 +91,18 @@ func main() {
 	// Register modules
 	modules.NewYappingModule(twitchUsername).Register()
 	modules.NewDiceModule().Register()
+	modules.NewCalabocaModule().Register()
+	modules.NewAudioModule().Register()
+	modules.NewTwitchHelixModule().Register()
+	modules.NewTimeoutModule(twitchUserId).Register()
+	modules.NewUserThemeModule(twitchUsername).Register()
 	// modules.NewSpotifyModule(spotifyConfig.clientId, spotifyConfig.clientSecret).Register()
 
 	// Register services
 	services.NewTwitchChatService(twitchUsername).Register()
+	services.NewTwitchEventSubService(twitchUserId).Register()
 	services.NewOBSService(obsAddress, obsPassword).Register()
 
 	// Start server
-	_ = http.NewHandlers(environment, twitchConfig).Start("localhost", "3000")
+	_ = http.NewHandlers(environment, twitchConfig).Start("0.0.0.0", "3000")
 }

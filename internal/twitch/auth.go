@@ -14,6 +14,13 @@ type TwitchAuth struct {
 	TwitchConfig *TwitchConfig
 }
 
+func NewTwitchAuth(token *oauth2.Token, config *TwitchConfig) *TwitchAuth {
+	return &TwitchAuth{
+		Token:        token,
+		TwitchConfig: config,
+	}
+}
+
 type TwitchConfig struct {
 	ClientId     string
 	ClientSecret string

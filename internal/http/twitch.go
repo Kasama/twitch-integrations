@@ -10,7 +10,6 @@ import (
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/http/views"
-	"github.com/Kasama/kasama-twitch-integrations/internal/services"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/oauth2"
@@ -21,30 +20,34 @@ const twitchRefreshToken = "twitch-refresh-token"
 const twitchTokenExpiration = "twitch-token-expiration"
 const commonTimeFormat = time.RFC3339Nano
 
-func TwitchAuthFromCookies(c echo.Context) (*twitch.TwitchAuth, error) {
+func TwitchAuthFromCookies(c echo.Context, twitchConfig *twitch.TwitchConfig) (*twitch.TwitchAuth, error) {
 	authToken, err := c.Cookie(twitchAuthToken)
 	if err != nil {
 		fmt.Printf("Error getting auth cookie: %v\n", err)
 		return nil, err
 	}
+
 	refreshToken, err := c.Cookie(twitchRefreshToken)
 	if err != nil {
 		fmt.Printf("Error getting refresh cookie: %v\n", err)
 		return nil, err
 	}
+
 	expiry, err := c.Cookie(twitchTokenExpiration)
 	if err != nil {
 		fmt.Printf("Error getting expiry cookie: %v\n", err)
 		return nil, err
 	}
 	expiryTime, _ := time.Parse(commonTimeFormat, expiry.Value)
-	return &twitch.TwitchAuth{
-		Token: &oauth2.Token{
+
+	return twitch.NewTwitchAuth(
+		&oauth2.Token{
 			AccessToken:  authToken.Value,
 			RefreshToken: refreshToken.Value,
 			Expiry:       expiryTime,
 		},
-	}, nil
+		twitchConfig,
+	), nil
 }
 
 func SaveToCookies(c echo.Context, t *twitch.TwitchAuth) {
@@ -66,14 +69,12 @@ func SaveToCookies(c echo.Context, t *twitch.TwitchAuth) {
 }
 
 type TwitchHandler struct {
-	twitchConfig     *twitch.TwitchConfig
-	chatService      *services.TwitchChatService
-	chatServiceExit  chan struct{}
+	twitchConfig *twitch.TwitchConfig
 }
 
 func NewTwitchHandler(twitchConfig *twitch.TwitchConfig) *TwitchHandler {
 	return &TwitchHandler{
-		twitchConfig:     twitchConfig,
+		twitchConfig: twitchConfig,
 	}
 }
 
@@ -95,7 +96,7 @@ func (t *TwitchHandler) handleRedirect(c echo.Context) error {
 		return err
 	}
 
-	auth := &twitch.TwitchAuth{Token: token}
+	auth := twitch.NewTwitchAuth(token, t.twitchConfig)
 	SaveToCookies(c, auth)
 
 	events.Dispatch[*twitch.TwitchAuth](auth)

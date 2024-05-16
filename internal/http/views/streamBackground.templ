@@ -1,0 +1,56 @@
+package views
+
+templ WavesBackground() {
+<style>
+  body {
+    /* background-color: #5461C3 */
+    background-image: linear-gradient(to right, #3678f9, #5461C3)
+  }
+
+  .box {
+    position: fixed;
+    top: 0;
+    transform: rotate(40deg);
+    left: 0;
+  }
+
+  .wave {
+    position: absolute;
+    opacity: .5;
+    width: 1500px;
+    height: 1300px;
+    margin-left: -150px;
+    margin-top: -250px;
+    border-radius: 43%;
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+
+    from {
+      transform: rotate(360deg);
+    }
+  }
+
+  .wave.-one {
+    animation: rotate 10000ms infinite linear;
+    background: #1c766c;
+  }
+
+  .wave.-two {
+    animation: rotate 6000ms infinite linear;
+    background: #5dffff;
+  }
+
+  .star {
+    background-image: url('./kuz.png');
+  }
+</style>
+<div class="box">
+  <div class="wave -one"></div>
+  <div class="wave -two"></div>
+  <!-- <div class='star'></div> -->
+</div>
+}

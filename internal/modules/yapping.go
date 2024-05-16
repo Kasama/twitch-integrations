@@ -40,7 +40,6 @@ func (m *YappingModule) handleTwitchClient(client *twitch.Client) error {
 }
 
 func (m *YappingModule) handlePrivateMessage(message *twitch.PrivateMessage) error {
-	logger.Debug("YappingModule: Got message event")
 	if m.twitchClient == nil {
 		return fmt.Errorf("twitch client not initialized, but got message event")
 	}
@@ -60,9 +59,9 @@ func (m *YappingModule) handlePrivateMessage(message *twitch.PrivateMessage) err
 		if count == 0 {
 			message = fmt.Sprintf("%s não falou nada hoje", user)
 		} else if count < 10 {
-			message = fmt.Sprintf("%s falou só %d bostas hoje", user, count)
+			message = fmt.Sprintf("%s falou só %d coisas hoje", user, count)
 		} else {
-			message = fmt.Sprintf("%s não para quieto, já foram %d mensagens hoje itskas19Yapping", user, count)
+			message = fmt.Sprintf("%s não para quieto, já foram %d bostas hoje itskas19Yapping", user, count)
 		}
 
 		m.twitchClient.Say(m.channel, message)

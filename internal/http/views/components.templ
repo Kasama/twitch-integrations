@@ -1,13 +1,13 @@
 package views
 
 templ title(text string) {
-<h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
-  { text }
-</h1>
+	<h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+		{ text }
+	</h1>
 }
 
 templ wsHotReload() {
-<script>
+	<script>
   let loc = window.location;
   let uri = "ws:";
   if (loc.protocol === "https:") {
@@ -32,16 +32,23 @@ templ wsHotReload() {
       console.warn("hot-reload websocket closed, but it never opened, assuming hot-reload is not supported (i.e. is production)")
     }
   };
+
+  setInterval(() => {
+    fetch("/api/livez")
+  }, 100)
 </script>
 }
 
 templ darkModeToggle() {
-<button id="theme-toggle" type="button"
-  class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-700 rounded-lg text-sm">
-  @iconSun(templ.Attributes{"id": "theme-toggle-light-icon", "class": "h-5 w-5"})
-  @iconMoon(templ.Attributes{"id": "theme-toggle-dark-icon", "class": "h-5 w-5 hidden"})
-</button>
-<script>
+	<button
+		id="theme-toggle"
+		type="button"
+		class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-700 rounded-lg text-sm"
+	>
+		@iconSun(templ.Attributes{"id": "theme-toggle-light-icon", "class": "h-5 w-5"})
+		@iconMoon(templ.Attributes{"id": "theme-toggle-dark-icon", "class": "h-5 w-5 hidden"})
+	</button>
+	<script>
   var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
   var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
@@ -89,23 +96,23 @@ templ darkModeToggle() {
 }
 
 templ Header() {
-<header class="bg-white shadow dark:bg-gray-900">
-  <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-    <a class="flex items-center" href="/">
-      @title("Kasama Twitch Helper")
-    </a>
-    <div class="flex flex-row items-center">
-      @darkModeToggle()
-    </div>
-  </div>
-</header>
+	<header class="bg-white shadow dark:bg-gray-900">
+		<div class="container mx-auto px-4 py-4 flex items-center justify-between">
+			<a class="flex items-center" href="/">
+				@title("Kasama Twitch Helper")
+			</a>
+			<div class="flex flex-row items-center">
+				@darkModeToggle()
+			</div>
+		</div>
+	</header>
 }
 
 templ Footer() {
-<footer class="bg-white shadow dark:bg-gray-900">
-  <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-    <p class="text-gray-600 dark:text-gray-400">© 2024 Roberto Alegro. Streaming Streams</p>
-    <!--
+	<footer class="bg-white shadow dark:bg-gray-900">
+		<div class="container mx-auto px-4 py-4 flex items-center justify-between">
+			<p class="text-gray-600 dark:text-gray-400">© 2024 Roberto Alegro. Streaming Streams</p>
+			<!--
 			<div>
 				<a class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 mr-4" href="#">
 					Privacy Policy
@@ -115,6 +122,6 @@ templ Footer() {
 				</a>
 			</div>
       -->
-  </div>
-</footer>
+		</div>
+	</footer>
 }
