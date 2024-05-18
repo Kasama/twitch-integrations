@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -23,19 +22,16 @@ const commonTimeFormat = time.RFC3339Nano
 func TwitchAuthFromCookies(c echo.Context, twitchConfig *twitch.TwitchConfig) (*twitch.TwitchAuth, error) {
 	authToken, err := c.Cookie(twitchAuthToken)
 	if err != nil {
-		fmt.Printf("Error getting auth cookie: %v\n", err)
 		return nil, err
 	}
 
 	refreshToken, err := c.Cookie(twitchRefreshToken)
 	if err != nil {
-		fmt.Printf("Error getting refresh cookie: %v\n", err)
 		return nil, err
 	}
 
 	expiry, err := c.Cookie(twitchTokenExpiration)
 	if err != nil {
-		fmt.Printf("Error getting expiry cookie: %v\n", err)
 		return nil, err
 	}
 	expiryTime, _ := time.Parse(commonTimeFormat, expiry.Value)

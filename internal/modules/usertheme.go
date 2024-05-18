@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
+	"github.com/Kasama/kasama-twitch-integrations/internal/http/views"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gempir/go-twitch-irc/v4"
@@ -107,10 +108,7 @@ func (m *UserThemeModule) IsBlacklisted(username string) bool {
 	row := m.db.QueryRow(query, username)
 	var name string
 	err := row.Scan(&name)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func (m *UserThemeModule) GetTheme(userID string) (string, error) {
@@ -181,6 +179,7 @@ func (m *UserThemeModule) handleTheme(message *twitch.PrivateMessage) error {
 
 	m.messagedAlready[message.User.Name] = struct{}{}
 	events.Dispatch(NewPlayAudioEvent(&resp.Body))
+	events.Dispatch(NewWebEvent("user_theme_played", views.RenderToString(views.UserTheme(&message.User))))
 
 	return nil
 }
@@ -223,7 +222,6 @@ func getThemeFromUrl(rawurl string) (string, error) {
 }
 
 func (m *UserThemeModule) handleChangeTheme(message *twitch.PrivateMessage) error {
-	logger.Debugf("message: %+v", message)
 	if !IsSubscriber(&message.User) || !strings.HasPrefix(message.Message, "!tema ") {
 		return nil
 	}

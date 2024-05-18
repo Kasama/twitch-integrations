@@ -6,6 +6,7 @@ import (
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
+	"github.com/Kasama/kasama-twitch-integrations/internal/modules"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
@@ -19,6 +20,7 @@ type Handlers struct {
 	environment  string
 	twitchConfig *twitch.TwitchConfig
 	twitchAuth   *twitch.TwitchAuth
+	webEvents    *modules.WebEventsModule
 }
 
 type State struct {
@@ -30,12 +32,13 @@ func Render(c echo.Context, statusCode int, t templ.Component) error {
 	return t.Render(c.Request().Context(), c.Response().Writer)
 }
 
-func NewHandlers(env string, twitchConfig *twitch.TwitchConfig) *Handlers {
+func NewHandlers(env string, twitchConfig *twitch.TwitchConfig, webEvents *modules.WebEventsModule) *Handlers {
 	return &Handlers{
 		server:       echo.New(),
 		logger:       logger.New("twitch_helper", log.DEBUG),
 		environment:  env,
 		twitchConfig: twitchConfig,
+		webEvents:    webEvents,
 	}
 }
 
@@ -76,7 +79,9 @@ func (h *Handlers) RegisterRoutes() {
 	twitchHandler := NewTwitchHandler(h.twitchConfig)
 
 	// API routes
-	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusOK) })
+	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
+	h.server.GET("/api/sse", h.webEvents.HandleSSE)
+	h.server.GET("/ws/dev/hot-reload", handleWSHotReload)
 
 	// Web UI routes
 	h.server.GET("/", HandleIndex)
@@ -84,6 +89,8 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.GET("/auth/twitch/redirect", twitchHandler.handleRedirect)
 	h.server.GET("/twitch", twitchHandler.handleIndex)
 	h.server.GET("/obs/background", HandleObsBackground)
+	h.server.GET("/sse", HandleSSEUI)
+	h.server.GET("/obsOverlay", HandleSSEUI)
 
 	h.server.Logger.Debug("Routes registered")
 	h.server.Logger.Info(h.server.Routes())

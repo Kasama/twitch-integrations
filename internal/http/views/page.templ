@@ -5,11 +5,16 @@ templ Head(title string) {
 		<title>{ title }</title>
 		<script src="https://cdn.tailwindcss.com"></script>
 		<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+		<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/remove-me.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/debug.js"></script>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 		<meta name="robots" content="index, follow"/>
 		<meta name="revisit-after" content="7 days"/>
 		<meta name="language" content="English"/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
 		<script>
     tailwind.config = {
       darkMode: 'class',

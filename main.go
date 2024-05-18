@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -59,8 +60,10 @@ func main() {
 	}
 	tmpDir, err := os.MkdirTemp("", t)
 	if err != nil {
-	  logger.Fatalf("Could not create tempdir %s", tmpDir)
+		logger.Fatalf("Could not create tempdir %s", tmpDir)
 	}
+
+	appContext := context.Background()
 
 	oauth2Config := &oauth2.Config{
 		ClientID:     clientId,
@@ -84,25 +87,33 @@ func main() {
 			"moderation:read",
 			"moderator:manage:banned_users",
 			"moderator:manage:chat_messages",
+			"channel:read:redemptions",
+			"channel:manage:redemptions",
+			"channel:read:predictions",
+			"channel:manage:predictions",
 		},
 	}
 	twitchConfig := twitch.NewTwitchConfig(clientId, clientSecret, twitchUserId, twitchUsername, oauth2Config)
+	webEventsModule := modules.NewWebEventsModule()
 
 	// Register modules
 	modules.NewYappingModule(twitchUsername).Register()
 	modules.NewDiceModule().Register()
-	modules.NewCalabocaModule().Register()
+	modules.NewCalabocaModule(twitchUserId).Register()
 	modules.NewAudioModule().Register()
 	modules.NewTwitchHelixModule().Register()
 	modules.NewTimeoutModule(twitchUserId).Register()
 	modules.NewUserThemeModule(twitchUsername).Register()
+	modules.NewCommunityGoalsModule().Register()
+	webEventsModule.Register()
 	// modules.NewSpotifyModule(spotifyConfig.clientId, spotifyConfig.clientSecret).Register()
 
 	// Register services
 	services.NewTwitchChatService(twitchUsername).Register()
 	services.NewTwitchEventSubService(twitchUserId).Register()
 	services.NewOBSService(obsAddress, obsPassword).Register()
+	services.NewTimerService(appContext).Register()
 
 	// Start server
-	_ = http.NewHandlers(environment, twitchConfig).Start("0.0.0.0", "3000")
+	_ = http.NewHandlers(environment, twitchConfig, webEventsModule).Start("0.0.0.0", "3000")
 }

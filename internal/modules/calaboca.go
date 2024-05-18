@@ -2,20 +2,19 @@ package modules
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
+	"github.com/Kasama/kasama-twitch-integrations/internal/http/views"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/andreykaipov/goobs"
 	inputRequest "github.com/andreykaipov/goobs/api/requests/inputs"
 	"github.com/joeyak/go-twitch-eventsub/v2"
+	"github.com/nicklaw5/helix/v2"
 )
 
 const rewardIDMuteMe = "1bbe8c0f-d7f5-48f2-a658-7b6ad2a2546d"
-const micMutedFile = "/tmp/mic-muted-forced.txt"
-const micMutedOwnerFile = "/tmp/mic-muted-forced-cause.txt"
 
 type EventMuteMe struct {
 	Duration time.Duration
@@ -23,24 +22,32 @@ type EventMuteMe struct {
 }
 
 type CalabocaModule struct {
-	obs *goobs.Client
+	obs           *goobs.Client
+	helix         *helix.Client
+	broadcasterID string
 }
 
-func NewCalabocaModule() *CalabocaModule {
-	return &CalabocaModule{}
+func NewCalabocaModule(broadcasterID string) *CalabocaModule {
+	return &CalabocaModule{
+		broadcasterID: broadcasterID,
+	}
 }
 
 func (m *CalabocaModule) Register() {
-	_ = os.WriteFile(micMutedFile, []byte(""), 0644)
-	_ = os.WriteFile(micMutedOwnerFile, []byte(""), 0644)
-
 	events.Register(m.handleOBSClient)
 	events.Register(m.handleReward)
 	events.Register(m.handleMuteMe)
+	events.Register(m.handleTwitchHelix)
 }
 
 func (m *CalabocaModule) handleOBSClient(client *goobs.Client) error {
 	m.obs = client
+
+	return nil
+}
+
+func (m *CalabocaModule) handleTwitchHelix(client *helix.Client) error {
+	m.helix = client
 
 	return nil
 }
@@ -50,6 +57,19 @@ func (m *CalabocaModule) handleReward(reward *twitch.EventChannelChannelPointsCu
 		return nil
 	}
 	events.Dispatch(&EventMuteMe{Duration: 30 * time.Second, User: reward.User.UserName})
+
+	if m.helix != nil {
+		_, err := m.helix.UpdateChannelCustomRewardsRedemptionStatus(&helix.UpdateChannelCustomRewardsRedemptionStatusParams{
+			ID:            reward.ID,
+			BroadcasterID: m.broadcasterID,
+			RewardID:      reward.Reward.ID,
+			Status:        "FULFILLED",
+		})
+		if err != nil {
+			logger.Errorf("Error updating reward status: %v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -81,15 +101,15 @@ func (m *CalabocaModule) handleMuteMe(e *EventMuteMe) error {
 		for {
 			tick := <-ticker.C
 			diff := endTime.Sub(tick)
-			_ = os.WriteFile(micMutedFile, []byte(fmt.Sprintf("  por %s", diff.Round(time.Second).String())), 0644)
-			_ = os.WriteFile(micMutedOwnerFile, []byte(e.User), 0644)
 
 			if tick.After(endTime) {
 				ticker.Stop()
 				_, _ = m.obs.Inputs.SetInputMute(inputRequest.NewSetInputMuteParams().WithInputName(micInput).WithInputMuted(false))
-				_ = os.WriteFile(micMutedFile, []byte(""), 0644)
-				_ = os.WriteFile(micMutedOwnerFile, []byte(""), 0644)
+
+				events.Dispatch(NewWebEvent("force_muted", ""))
 				break
+			} else {
+				events.Dispatch(NewWebEvent("force_muted", views.RenderToString(views.ForceMuted(diff.Round(time.Second).String(), e.User))))
 			}
 		}
 	}()

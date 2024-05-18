@@ -1,0 +1,111 @@
+package views
+
+import "fmt"
+import "github.com/gempir/go-twitch-irc/v4"
+
+templ OBSOverlay() {
+	<body>
+		<!-- <div class={ "text-white" , fontSize(12), textShadow(8, "#333" ) }>Coisas escritas</div> -->
+		<!-- <div class={ "text-rose-400" , fontSize(4), anotherTextShadow() }> Coisas escritas</div> -->
+		<style type="text/css">
+    @keyframes wavy {
+      0% {
+        top: 0px;
+      }
+
+      50% {
+        top: -15px;
+      }
+
+      100% {
+        top: 0px;
+      }
+    }
+  </style>
+		<div hx-ext="sse" sse-connect="/api/sse">
+			<div sse-swap="force_muted" hx-swap="innerHTML"></div>
+			<div sse-swap="user_theme_played" hx-swap="innerHTML"></div>
+			<div sse-swap="community_coin" hx-swap="innerHTML settle:1s"></div>
+		</div>
+		@CommunityCoin(50, 50)
+	</body>
+}
+
+func shadowPos(size int, color string, x string, y string) string {
+	return fmt.Sprintf("%s%dpx %s%dpx 0 %s", x, size, y, size, color)
+}
+
+css textShadow(size int, color string) {
+	text-shadow: { templ.SafeCSSProperty(fmt.Sprintf("%s, %s, %s, %s", shadowPos(size/2, color, "-", "-"), shadowPos(size/2,
+color, "", "-"), shadowPos(size, color, "-", ""), shadowPos(size, color, "", ""))) };
+}
+
+css anotherTextShadow() {
+	text-shadow: -1px -1px 1px rgba(255,255,255,.1), 1px 1px 1px rgba(0,0,0,.5), 2px 2px 4px rgba(0,0,0,.9);
+}
+
+css fontSize(size float32) {
+	font-size: { templ.SafeCSSProperty(fmt.Sprintf("%frem", size)) };
+}
+
+css absolutePos(x int, y int) {
+	top: { templ.SafeCSSProperty(fmt.Sprintf("%dvh", x)) };
+	left: { templ.SafeCSSProperty(fmt.Sprintf("%dvw", y)) };
+	transform: translate(-50%, -50%);
+}
+
+templ CommunityCoin(x int, y int) {
+	<div class={ "absolute" , absolutePos(x, y) }>
+		<div class="flex flex-col items-center">
+			<div class={ "border-4 border-all border-red-500 min-w-8 max-w-8 min-h-8 max-h-8" }></div>
+			<span class={ "text-white" , anotherTextShadow(), fontSize(1.5) }>Use !coletar</span>
+		</div>
+	</div>
+}
+
+templ ForceMuted(time string, cause string) {
+	<div class={ "absolute" , absolutePos(85, 50) }>
+		<div class="flex flex-col items-center">
+			<div class={ "text-rose-400" , "font-bold" , fontSize(4) }>
+				<i class="fa-solid fa-microphone-slash"></i>
+				<span>Calado por { time }</span>
+			</div>
+			<div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
+				<span>- { cause }</span>
+			</div>
+		</div>
+	</div>
+}
+
+css textColor(color string) {
+	color: { templ.SafeCSSProperty(color) };
+}
+
+css wavyLetter(delay string) {
+	animation-name: wavy;
+	animation-duration: 1.3s;
+	animation-timing-function: ease;
+	animation-iteration-count: infinite;
+	animation-delay: { templ.SafeCSSProperty(delay) };
+	position: relative;
+	top: 0;
+	left: 0;
+}
+
+templ wavyText(text string) {
+	for i, letter := range text {
+		<span class={ wavyLetter(fmt.Sprintf("%dms", i*60)) }>{ string(letter) }</span>
+	}
+}
+
+templ UserTheme(user *twitch.User) {
+	<div hx-ext="remove-me" remove-me="5s">
+		<div class={ "absolute" , "fading" , absolutePos(15, 80) }>
+			<span class={ "text-blue-500" , "font-bold" , fontSize(1) }>Abaixa que</span>
+			<span class={ "font-bold" , fontSize(2), textColor(user.Color) }>
+				@wavyText(user.DisplayName)
+			</span>
+			<span class={ "text-blue-500" , "font-bold" , fontSize(1) }>chegou</span>
+		</div>
+	</div>
+}
