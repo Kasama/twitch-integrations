@@ -12,7 +12,7 @@ const RESET = "\u001b[0m"
 const CYAN = "\u001b[36m"
 const GREEN = "\u001b[32m"
 
-var l = log.New("twitch-intgrations")
+var l = log.New("twitch-integrations")
 
 func GetLogger() *log.Logger {
 	return l

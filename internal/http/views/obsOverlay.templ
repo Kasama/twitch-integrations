@@ -1,7 +1,7 @@
 package views
 
 import "fmt"
-import "github.com/gempir/go-twitch-irc/v4"
+import "github.com/nicklaw5/helix/v2"
 
 templ OBSOverlay() {
 	<body>
@@ -21,13 +21,24 @@ templ OBSOverlay() {
         top: 0px;
       }
     }
+
+    .msn-notification.htmx-added,
+    .msn-notification.htmx-swapping {
+      opacity: 0;
+      transform: translate(0, 300px);
+    }
+
+    .msn-notification {
+      opacity: 1;
+      transition: all 1s ease-out;
+    }
   </style>
 		<div hx-ext="sse" sse-connect="/api/sse">
 			<div sse-swap="force_muted" hx-swap="innerHTML"></div>
-			<div sse-swap="user_theme_played" hx-swap="innerHTML"></div>
-			<div sse-swap="community_coin" hx-swap="innerHTML settle:1s"></div>
+			<div sse-swap="user_theme_played" hx-swap="innerHTML settle:2s"></div>
+			<div sse-swap="community_coin" hx-swap="innerHTML settle:10s"></div>
 		</div>
-		@CommunityCoin(50, 50)
+		@MsnNotification(&helix.User{}, "#fff")
 	</body>
 }
 
@@ -57,8 +68,12 @@ css absolutePos(x int, y int) {
 templ CommunityCoin(x int, y int) {
 	<div class={ "absolute" , absolutePos(x, y) }>
 		<div class="flex flex-col items-center">
-			<div class={ "border-4 border-all border-red-500 min-w-8 max-w-8 min-h-8 max-h-8" }></div>
-			<span class={ "text-white" , anotherTextShadow(), fontSize(1.5) }>Use !coletar</span>
+			<div class={ "border-all border-red-500 min-w-10 max-w-10 min-h-10 max-h-10" }>
+				<image
+					src="https://64.media.tumblr.com/34ecb97af549396ce54461835a63d1b3/1fe59baa06bb8c17-d9/s540x810/041f293db97d977df5ccd2cd8b94995aa2f9a34a.gifv"
+				></image>
+			</div>
+			<span class={ "text-white" , anotherTextShadow(), fontSize(1.5) }>!coletar</span>
 		</div>
 	</div>
 }
@@ -98,11 +113,11 @@ templ wavyText(text string) {
 	}
 }
 
-templ UserTheme(user *twitch.User) {
+templ UserTheme(user *helix.User, color string) {
 	<div hx-ext="remove-me" remove-me="5s">
 		<div class={ "absolute" , "fading" , absolutePos(15, 80) }>
 			<span class={ "text-blue-500" , "font-bold" , fontSize(1) }>Abaixa que</span>
-			<span class={ "font-bold" , fontSize(2), textColor(user.Color) }>
+			<span class={ "font-bold" , fontSize(2), textColor(color) }>
 				@wavyText(user.DisplayName)
 			</span>
 			<span class={ "text-blue-500" , "font-bold" , fontSize(1) }>chegou</span>

@@ -9,35 +9,36 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Kasama/kasama-twitch-integrations/internal/db"
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/http/views"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/PuerkitoBio/goquery"
+	obsEvents "github.com/andreykaipov/goobs/api/events"
 	"github.com/gempir/go-twitch-irc/v4"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/nicklaw5/helix/v2"
 )
-
-const localDatabase = "run/database.db"
 
 var ThemeNotFound = errors.New("Theme not found")
 
 type UserThemeModule struct {
-	db              *sql.DB
-	messagedAlready map[string]struct{}
+	db              *db.Database
 	client          *twitch.Client
+	helix           *helix.Client
+	messagedAlready map[string]struct{}
 	channel         string
 }
 
 func NewUserThemeModule(channel string) *UserThemeModule {
-	db, err := sql.Open("sqlite3", localDatabase)
+	db, err := db.GetDatabase()
 	if err != nil {
 		logger.Errorf("Failed to open database: %s", err.Error())
 	}
 
 	module := &UserThemeModule{
 		db:              db,
-		messagedAlready: map[string]struct{}{},
 		client:          &twitch.Client{},
+		messagedAlready: make(map[string]struct{}),
 		channel:         channel,
 	}
 	err = module.setupDatabase()
@@ -63,6 +64,10 @@ func (m *UserThemeModule) setupDatabase() error {
 		CREATE TABLE IF NOT EXISTS user_blacklist (
 		username TEXT PRIMARY KEY NOT NULL);`
 
+	const createUsedThemeAlreadyTable = `
+		CREATE TABLE IF NOT EXISTS used_theme_already (
+		userID TEXT PRIMARY KEY NOT NULL);`
+
 	_, err := m.db.Exec(createThemesTable)
 	if err != nil {
 		return err
@@ -73,14 +78,76 @@ func (m *UserThemeModule) setupDatabase() error {
 		return err
 	}
 
+	_, err = m.db.Exec(createUsedThemeAlreadyTable)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (m *UserThemeModule) SetTheme(userID, theme string) error {
+func (m *UserThemeModule) hasUsedThemeAlready(userID string) bool {
+	if _, exists := m.messagedAlready[userID]; exists {
+		return true
+	}
+	if m.db == nil {
+		return false
+	}
+	row := m.db.QueryRow("SELECT userID FROM used_theme_already WHERE userID = ?;", userID)
+	var uid string
+	err := row.Scan(&uid)
+	if err != nil {
+		return false
+	}
+	m.messagedAlready[uid] = struct{}{}
+	return true
+}
+
+func (m *UserThemeModule) setUsedThemeAlready(userID string) {
+	if m.db == nil {
+		logger.Errorf("Database is not initialized")
+		return
+	}
+	_, err := m.db.Exec("INSERT INTO used_theme_already (userID) VALUES (?) ON CONFLICT(userID) DO NOTHING;", userID)
+	if err != nil {
+		logger.Errorf("Failed to set used theme already: %s", err.Error())
+	}
+	m.messagedAlready[userID] = struct{}{}
+}
+
+func (m *UserThemeModule) deleteUsedThemeAlready(userID string) {
+	delete(m.messagedAlready, userID)
+	if m.db == nil {
+		logger.Errorf("Database is not initialized")
+		return
+	}
+	_, err := m.db.Exec("DELETE FROM used_theme_already WHERE userID = ?;", userID)
+	if err != nil {
+		logger.Errorf("Failed to clear used_themes_already table", err.Error())
+	}
+}
+
+func (m *UserThemeModule) clearUsedThemes() {
+	m.messagedAlready = make(map[string]struct{})
+	if m.db == nil {
+		logger.Errorf("Database is not initialized")
+		return
+	}
+	_, err := m.db.Exec("DELETE FROM used_theme_already")
+	if err != nil {
+		logger.Errorf("Failed to clear used_themes_already table", err.Error())
+	}
+}
+
+func (m *UserThemeModule) setTheme(userID, theme string) error {
 	if m.db == nil {
 		return fmt.Errorf("database is not initialized")
 	}
-	const insert = `INSERT INTO user_themes (userID, theme, updated_at) VALUES (?, ?, ?);`
+	const insert = `
+		INSERT INTO user_themes (userID, theme, updated_at) VALUES (?, ?, ?)
+		ON CONFLICT(userID) DO UPDATE SET
+			theme=excluded.theme,
+			updated_at=excluded.updated_at;`
 	_, err := m.db.Exec(insert, userID, theme, time.Now())
 	if err != nil {
 		return err
@@ -88,7 +155,7 @@ func (m *UserThemeModule) SetTheme(userID, theme string) error {
 	return nil
 }
 
-func (m *UserThemeModule) SetThemeBan(username string) error {
+func (m *UserThemeModule) setThemeBan(username string) error {
 	if m.db == nil {
 		return fmt.Errorf("database is not initialized")
 	}
@@ -100,7 +167,7 @@ func (m *UserThemeModule) SetThemeBan(username string) error {
 	return nil
 }
 
-func (m *UserThemeModule) IsBlacklisted(username string) bool {
+func (m *UserThemeModule) isBlacklisted(username string) bool {
 	if m.db == nil {
 		return false
 	}
@@ -111,7 +178,7 @@ func (m *UserThemeModule) IsBlacklisted(username string) bool {
 	return err == nil
 }
 
-func (m *UserThemeModule) GetTheme(userID string) (string, error) {
+func (m *UserThemeModule) getTheme(userID string) (string, error) {
 	if m.db == nil {
 		return "", fmt.Errorf("database is not initialized")
 	}
@@ -130,11 +197,14 @@ func (m *UserThemeModule) GetTheme(userID string) (string, error) {
 
 // Register implements events.EventHandler.
 func (m *UserThemeModule) Register() {
+	events.Register(m.handleTwitchClient)
+	events.Register(m.handleHelixTwitchClient)
+
 	events.Register(m.handleTheme)
 	events.Register(m.handleChangeTheme)
 	events.Register(m.handleReset)
 	events.Register(m.handleBan)
-	events.Register(m.handleTwitchClient)
+	events.Register(m.handleStartStream)
 }
 
 func IsSubscriber(user *twitch.User) bool {
@@ -148,22 +218,35 @@ func (m *UserThemeModule) handleTwitchClient(client *twitch.Client) error {
 	return nil
 }
 
+func (m *UserThemeModule) handleHelixTwitchClient(client *helix.Client) error {
+	m.helix = client
+	return nil
+}
+
+func (m *UserThemeModule) handleStartStream(e *obsEvents.StreamStateChanged) error {
+	if e.OutputActive {
+		return nil
+	}
+	m.clearUsedThemes()
+	return nil
+}
+
 func (m *UserThemeModule) handleTheme(message *twitch.PrivateMessage) error {
 	if !IsSubscriber(&message.User) {
 		// ignore non-subscribers
 		return nil
 	}
 
-	if _, exists := m.messagedAlready[message.User.Name]; exists {
+	if m.hasUsedThemeAlready(message.User.ID) {
 		// User has sent messages already, ignore them
 		return nil
 	}
 
-	if m.IsBlacklisted(message.User.Name) {
+	if m.isBlacklisted(message.User.Name) {
 		return nil
 	}
 
-	theme, err := m.GetTheme(message.User.ID)
+	theme, err := m.getTheme(message.User.ID)
 	if err != nil {
 		if err == ThemeNotFound {
 			return nil
@@ -177,9 +260,15 @@ func (m *UserThemeModule) handleTheme(message *twitch.PrivateMessage) error {
 		return err
 	}
 
-	m.messagedAlready[message.User.Name] = struct{}{}
+	m.setUsedThemeAlready(message.User.ID)
 	events.Dispatch(NewPlayAudioEvent(&resp.Body))
-	events.Dispatch(NewWebEvent("user_theme_played", views.RenderToString(views.UserTheme(&message.User))))
+	users, _ := m.helix.GetUsers(&helix.UsersParams{
+		IDs: []string{message.User.ID},
+	})
+
+	user := users.Data.Users[0]
+
+	events.Dispatch(NewWebEvent("user_theme_played", views.RenderToString(views.MsnNotification(&user, message.User.Color))))
 
 	return nil
 }
@@ -222,25 +311,39 @@ func getThemeFromUrl(rawurl string) (string, error) {
 }
 
 func (m *UserThemeModule) handleChangeTheme(message *twitch.PrivateMessage) error {
-	if !IsSubscriber(&message.User) || !strings.HasPrefix(message.Message, "!tema ") {
-		return nil
-	}
-
 	printThemeUsage := func() {
-		logger.Debugf("Got client: %v", m.client)
 		if m.client != nil {
-			m.client.Say(m.channel, "Uso: !tema <url>. A URL deve ser um link de um .mp3 ou um link do www.myinstants.com (max 10s)")
+			m.client.Say(m.channel, "Uso para subs/vips: !tema <url>. A URL deve ser um link de um .mp3 ou um link do www.myinstants.com (max 10s)")
 		}
 	}
 
+	if message.Message == "!tema" {
+		printThemeUsage()
+		return nil
+	}
+
+	if !strings.HasPrefix(message.Message, "!tema ") {
+		return nil
+	}
+
+	if !IsSubscriber(&message.User) {
+		printThemeUsage()
+		return nil
+	}
+
 	parts := strings.Split(message.Message, " ")
+	if len(parts) < 2 {
+		printThemeUsage()
+		return nil
+	}
+
 	finalURL, err := getThemeFromUrl(parts[1])
 	if err != nil || finalURL == "" {
 		printThemeUsage()
 		return err
 	}
 
-	err = m.SetTheme(message.User.ID, finalURL)
+	err = m.setTheme(message.User.ID, finalURL)
 	if err != nil {
 		return err
 	}
@@ -254,9 +357,16 @@ func (m *UserThemeModule) handleReset(message *twitch.PrivateMessage) error {
 	}
 
 	parts := strings.Split(message.Message, " ")
+	if len(parts) < 2 {
+		return nil
+	}
 	name := strings.ToLower(strings.TrimPrefix(strings.TrimSpace(parts[1]), "@"))
 
-	delete(m.messagedAlready, name)
+	if name == "all" {
+		m.clearUsedThemes()
+	}
+
+	m.deleteUsedThemeAlready(message.User.ID)
 	logger.Debugf("Reset theme for %s. Users are: %v", name, m.messagedAlready)
 
 	return nil
@@ -270,7 +380,7 @@ func (m *UserThemeModule) handleBan(message *twitch.PrivateMessage) error {
 	parts := strings.Split(message.Message, " ")
 	name := strings.ToLower(strings.TrimPrefix(strings.TrimSpace(parts[1]), "@"))
 
-	err := m.SetThemeBan(name)
+	err := m.setThemeBan(name)
 	if err != nil {
 		return err
 	}

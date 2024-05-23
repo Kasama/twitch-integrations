@@ -6,32 +6,60 @@ import (
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
+	twitchIRC "github.com/gempir/go-twitch-irc/v4"
 	twitchEventSub "github.com/joeyak/go-twitch-eventsub/v2"
 	helix "github.com/nicklaw5/helix/v2"
 )
 
 const rewardIDTimeout = "02346565-cfe5-41a1-821a-0f6f558e6bac"
 const rewardIdTimeoutMalboro = "b4d01731-38aa-4433-af9e-cc95a3523b91"
+const rewardIdForceTimeoutMalboro = "22702c49-f9b3-4f2c-b7a3-649aa8540043"
 const rewardIdUnTimeoutMalboro = "c92a4c7e-6eca-4566-b4d9-254cd383a986"
 const malboroID = "821524016"
+
+const timeoutMethod = "ban"
 
 type TimeoutModule struct {
 	broadcasterID string
 	client        *helix.Client
 	malboroShield time.Time
+	timeoutUntil  map[string]time.Time
 }
 
 func NewTimeoutModule(broadcasterID string) *TimeoutModule {
 	return &TimeoutModule{
 		broadcasterID: broadcasterID,
+		client:        &helix.Client{},
 		malboroShield: time.Unix(0, 0),
+		timeoutUntil:  map[string]time.Time{},
 	}
+}
+
+func (m *TimeoutModule) timeoutUser(user string, duration int) error {
+	if timeoutMethod == "ban" {
+		_, err := m.client.BanUser(&helix.BanUserParams{
+			BroadcasterID: m.broadcasterID,
+			ModeratorId:   m.broadcasterID,
+			Body: helix.BanUserRequestBody{
+				Duration: duration,
+				Reason:   "timeout dos pontinhos",
+				UserId:   user,
+			},
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		m.timeoutUntil[user] = time.Now().Add(time.Duration(duration) * time.Second)
+	}
+	return nil
 }
 
 func (m *TimeoutModule) Register() {
 	events.Register(m.handleTimeoutReward)
 	events.Register(m.handleUnTimeoutReward)
 	events.Register(m.handleHelixClient)
+	events.Register(m.handleVirtualTimeout)
 }
 
 func (m *TimeoutModule) handleHelixClient(client *helix.Client) error {
@@ -39,7 +67,24 @@ func (m *TimeoutModule) handleHelixClient(client *helix.Client) error {
 	return nil
 }
 
+func (m *TimeoutModule) handleVirtualTimeout(msg *twitchIRC.PrivateMessage) error {
+	if timeoutMethod == "ban" {
+		return nil
+	}
+
+	if t, exists := m.timeoutUntil[msg.User.ID]; exists && time.Now().Before(t) {
+		_, _ = m.client.DeleteChatMessage(&helix.DeleteChatMessageParams{
+			BroadcasterID: m.broadcasterID,
+			ModeratorID:   m.broadcasterID,
+			MessageID:     msg.ID,
+		})
+	}
+
+	return nil
+}
+
 func (m *TimeoutModule) handleUnTimeoutReward(reward *twitchEventSub.EventChannelChannelPointsCustomRewardRedemptionAdd) error {
+	logger.Debugf("reward: %+v", reward)
 	if reward.Reward.ID != rewardIdUnTimeoutMalboro {
 		return nil
 	}
@@ -57,7 +102,7 @@ func (m *TimeoutModule) handleUnTimeoutReward(reward *twitchEventSub.EventChanne
 }
 
 func (m *TimeoutModule) handleTimeoutReward(reward *twitchEventSub.EventChannelChannelPointsCustomRewardRedemptionAdd) error {
-	if reward.Reward.ID != rewardIDTimeout && reward.Reward.ID != rewardIdTimeoutMalboro {
+	if reward.Reward.ID != rewardIDTimeout && reward.Reward.ID != rewardIdTimeoutMalboro && reward.Reward.ID != rewardIdForceTimeoutMalboro {
 		return nil
 	}
 
@@ -67,18 +112,9 @@ func (m *TimeoutModule) handleTimeoutReward(reward *twitchEventSub.EventChannelC
 
 	user := reward.User.UserID
 	duration := 600
-	if reward.Reward.ID == rewardIdTimeoutMalboro {
-		if time.Now().Before(m.malboroShield) {
+	if reward.Reward.ID == rewardIdTimeoutMalboro || reward.Reward.ID == rewardIdForceTimeoutMalboro {
+		if time.Now().Before(m.malboroShield) && reward.Reward.ID != rewardIdForceTimeoutMalboro {
 			logger.Debugf("Malboro Shield is up: Denying reward")
-			// _, err := m.client.UpdateChannelCustomRewardsRedemptionStatus(&helix.UpdateChannelCustomRewardsRedemptionStatusParams{
-			// 	ID:            reward.ID,
-			// 	BroadcasterID: m.broadcasterID,
-			// 	RewardID:      reward.Reward.ID,
-			// 	Status:        "CANCELED",
-			// })
-			// if err != nil {
-			// 	return err
-			// }
 			_, err := m.client.SendChatMessage(&helix.SendChatMessageParams{
 				BroadcasterID: m.broadcasterID,
 				SenderID:      m.broadcasterID,
@@ -93,19 +129,10 @@ func (m *TimeoutModule) handleTimeoutReward(reward *twitchEventSub.EventChannelC
 		user = malboroID
 	}
 
-	resp, err := m.client.BanUser(&helix.BanUserParams{
-		BroadcasterID: m.broadcasterID,
-		ModeratorId:   m.broadcasterID,
-		Body: helix.BanUserRequestBody{
-			Duration: duration,
-			Reason:   "timeout dos pontinhos",
-			UserId:   user,
-		},
-	})
+	err := m.timeoutUser(user, duration)
 	if err != nil {
-		return err
+		logger.Errorf("Error timing out user: %v", err)
 	}
-	logger.Debugf("Banned Users: %+v", resp)
 
 	_, err = m.client.UpdateChannelCustomRewardsRedemptionStatus(&helix.UpdateChannelCustomRewardsRedemptionStatusParams{
 		ID:            reward.ID,

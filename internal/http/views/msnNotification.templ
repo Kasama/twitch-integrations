@@ -1,0 +1,103 @@
+package views
+
+import "fmt"
+import "github.com/nicklaw5/helix/v2"
+
+css msnBoxSize() {
+	min-height: 120px;
+	max-height: 120px;
+	min-width: 220px;
+	max-width: 220px;
+}
+
+css msnBoxSizeBig() {
+	min-height: 420px;
+	max-height: 420px;
+	min-width: 800px;
+	max-width: 800px;
+}
+
+css gradient(from, to string) {
+	background-image: { templ.SafeCSSProperty(fmt.Sprintf("linear-gradient(90deg, %s, %s)", from, to)) };
+}
+
+css msnBox() {
+	background: linear-gradient( 180deg, rgba(208, 228, 251, 1) 0%, rgba(206, 227, 249, 1) 12.5%, rgba(209, 230, 249, 1) 25%, rgba(213, 233, 250, 1) 36.45833432674408%, rgba(221, 236, 251, 1) 50%, rgba(227, 241, 253, 1) 63.54166865348816%, rgba(233, 246, 254, 1) 76.5625%, rgba(233, 247, 255, 1) 88.54166865348816%, rgba(228, 244, 255, 1) 100%);
+	border-radius: 6px;
+	padding: 6px 12px 4px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	align-items: flex-start;
+	justify-content: flex-start;
+	position: relative;
+	box-shadow: inset -1px -1px 0px 0px rgba(97, 211, 244, 0.8), inset 1px 1px 0px 0px rgba(255, 255, 255, 1), 0px 0px 10px 0px rgba(0, 0, 0, 0.9);
+}
+
+css msnTitle() {
+	color: #383838;
+	text-align: left;
+	font-family: "SegoeUi-Regular", sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	position: relative;
+}
+
+css msnBackgroundPosition() {
+	left: calc(50% - 94.5px);
+	right: calc(50% - 28px);
+}
+
+css msnAvatar() {
+	border-radius: 2px;
+	border-style: solid;
+	border-color: rgba(255, 255, 255, 0.5);
+	border-width: 1px;
+	width: 48px;
+	height: 48px;
+	position: absolute;
+	left: calc(50% - 90.5px);
+	top: calc(50% - 30px);
+	object-fit: cover;
+}
+
+css msnText(fontWeight string) {
+	color: #383838;
+	text-align: left;
+	font-family: "SegoeUi-Semibold", sans-serif;
+	font-size: 12px;
+	font-weight: { templ.SafeCSSProperty(fontWeight) };
+	position: relative;
+}
+
+css msnTextColor(color string) {
+	color: { templ.SafeCSSProperty(color) };
+}
+
+templ MsnNotification(user *helix.User, color string) {
+	<div class="msn-notification" hx-ext="remove-me" remove-me="5s swap:4s">
+		<div class={ "absolute" , absolutePos(92, 90) }>
+			<div class={ "flex" , "flex-col" , "rounded-xl" , gradient("#e5f4ff", "#d0e5fb" ), msnBoxSize() , msnBox() }>
+				<div class="flex flex-row justify-between self-stretch">
+					<img src="/assets/kisspng-computer-wallpaper-technology-green-actions-im-msn-5-ab-0-bdd-1200254-20.png"/>
+					<div class={ msnTitle() }><span>MSN Menssenger</span></div>
+					@iconClose(templ.Attributes{"class": "shrink-0 w-1.5 h-1.5 relative overflow-visible"})
+				</div>
+				<div class="flex flex-col items-start justify-start self-stretch shrink-0 relative gap-2">
+					<div class="flex flex-row gap-2.5 items-center justify-start self-stretch shrink-0 relative">
+						<div class="shrink-0 w-14 h-14 static">
+							<div class={ "w-14" , "h-14" , "absolute" , "overflow-visible" , msnBackgroundPosition() }>
+								@iconBackground(templ.Attributes{})
+							</div>
+							<img class={ msnAvatar() } src={ user.ProfileImageURL }/>
+						</div>
+						<div class="relative flex-1 justify-start align-start gap-0 flex flex-col">
+							<div class={ msnText("600"), msnTextColor(color) }>{ user.DisplayName } </div>
+							<div class={ msnText("300") }>acabou de entrar </div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}

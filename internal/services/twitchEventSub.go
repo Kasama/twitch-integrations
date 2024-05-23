@@ -35,10 +35,10 @@ func (t *TwitchEventSubService) handleAuth(auth *internalTwitch.TwitchAuth) erro
 	client := twitch.NewClient()
 
 	client.OnError(func(err error) {
-		logger.Printf("ERROR: %v\n", err)
+		logger.Errorf("TwitchEventSub client error: %v", err)
 	})
 	client.OnWelcome(func(message twitch.WelcomeMessage) {
-		logger.Printf("WELCOME: %v\n", message)
+		logger.Debugf("WELCOME: %v\n", message)
 
 		events := []twitch.EventSubscription{
 			twitch.SubStreamOnline,
@@ -60,7 +60,7 @@ func (t *TwitchEventSubService) handleAuth(auth *internalTwitch.TwitchAuth) erro
 				},
 			})
 			if err != nil {
-				logger.Printf("ERROR: %v\n", err)
+				logger.Errorf("twitchEventSub failed to subcribe to events: %v\n", err)
 				return
 			}
 		}

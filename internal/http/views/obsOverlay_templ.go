@@ -12,7 +12,7 @@ import "bytes"
 import "strings"
 
 import "fmt"
-import "github.com/gempir/go-twitch-irc/v4"
+import "github.com/nicklaw5/helix/v2"
 
 func OBSOverlay() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
@@ -27,11 +27,11 @@ func OBSOverlay() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><!-- <div class={ \"text-white\" , fontSize(12), textShadow(8, \"#333\" ) }>Coisas escritas</div> --><!-- <div class={ \"text-rose-400\" , fontSize(4), anotherTextShadow() }>\uf131 Coisas escritas</div> --><style type=\"text/css\">\n    @keyframes wavy {\n      0% {\n        top: 0px;\n      }\n\n      50% {\n        top: -15px;\n      }\n\n      100% {\n        top: 0px;\n      }\n    }\n  </style><div hx-ext=\"sse\" sse-connect=\"/api/sse\"><div sse-swap=\"force_muted\" hx-swap=\"innerHTML\"></div><div sse-swap=\"user_theme_played\" hx-swap=\"innerHTML\"></div><div sse-swap=\"community_coin\" hx-swap=\"innerHTML settle:1s\"></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><!-- <div class={ \"text-white\" , fontSize(12), textShadow(8, \"#333\" ) }>Coisas escritas</div> --><!-- <div class={ \"text-rose-400\" , fontSize(4), anotherTextShadow() }>\uf131 Coisas escritas</div> --><style type=\"text/css\">\n    @keyframes wavy {\n      0% {\n        top: 0px;\n      }\n\n      50% {\n        top: -15px;\n      }\n\n      100% {\n        top: 0px;\n      }\n    }\n\n    .msn-notification.htmx-added,\n    .msn-notification.htmx-swapping {\n      opacity: 0;\n      transform: translate(0, 300px);\n    }\n\n    .msn-notification {\n      opacity: 1;\n      transition: all 1s ease-out;\n    }\n  </style><div hx-ext=\"sse\" sse-connect=\"/api/sse\"><div sse-swap=\"force_muted\" hx-swap=\"innerHTML\"></div><div sse-swap=\"user_theme_played\" hx-swap=\"innerHTML settle:2s\"></div><div sse-swap=\"community_coin\" hx-swap=\"innerHTML settle:10s\"></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = CommunityCoin(50, 50).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = MsnNotification(&helix.User{}, "#fff").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -128,7 +128,7 @@ func CommunityCoin(x int, y int) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var5 = []any{"border-4 border-all border-red-500 min-w-8 max-w-8 min-h-8 max-h-8"}
+		var templ_7745c5c3_Var5 = []any{"border-all border-red-500 min-w-10 max-w-10 min-h-10 max-h-10"}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var5...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -146,7 +146,7 @@ func CommunityCoin(x int, y int) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><image src=\"https://64.media.tumblr.com/34ecb97af549396ce54461835a63d1b3/1fe59baa06bb8c17-d9/s540x810/041f293db97d977df5ccd2cd8b94995aa2f9a34a.gifv\"></image></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -168,7 +168,7 @@ func CommunityCoin(x int, y int) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Use !coletar</span></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">!coletar</span></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -239,7 +239,7 @@ func ForceMuted(time string, cause string) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(time)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 71, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 86, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -274,7 +274,7 @@ func ForceMuted(time string, cause string) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(cause)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 74, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 89, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -357,7 +357,7 @@ func wavyText(text string) templ.Component {
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(string(letter))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 97, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 112, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -375,7 +375,7 @@ func wavyText(text string) templ.Component {
 	})
 }
 
-func UserTheme(user *twitch.User) templ.Component {
+func UserTheme(user *helix.User, color string) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -436,7 +436,7 @@ func UserTheme(user *twitch.User) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var27 = []any{"font-bold", fontSize(2), textColor(user.Color)}
+		var templ_7745c5c3_Var27 = []any{"font-bold", fontSize(2), textColor(color)}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var27...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

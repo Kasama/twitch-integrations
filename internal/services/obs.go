@@ -48,6 +48,8 @@ func (obs *OBSService) Register() {
 				events.Dispatch(e)
 			case *obsEvents.SceneItemSelected:
 				events.Dispatch(e)
+			case *obsEvents.StreamStateChanged:
+				events.Dispatch(e)
 			}
 		})
 	}(obs.obsClient)

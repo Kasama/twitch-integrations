@@ -87,6 +87,7 @@ func main() {
 			"moderation:read",
 			"moderator:manage:banned_users",
 			"moderator:manage:chat_messages",
+			"moderator:manage:automod",
 			"channel:read:redemptions",
 			"channel:manage:redemptions",
 			"channel:read:predictions",
@@ -104,7 +105,7 @@ func main() {
 	modules.NewTwitchHelixModule().Register()
 	modules.NewTimeoutModule(twitchUserId).Register()
 	modules.NewUserThemeModule(twitchUsername).Register()
-	modules.NewCommunityGoalsModule().Register()
+	modules.NewCommunityGoalsModule(twitchUsername).Register()
 	webEventsModule.Register()
 	// modules.NewSpotifyModule(spotifyConfig.clientId, spotifyConfig.clientSecret).Register()
 

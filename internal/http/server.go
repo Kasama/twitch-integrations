@@ -84,6 +84,7 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.GET("/ws/dev/hot-reload", handleWSHotReload)
 
 	// Web UI routes
+	h.server.Static("/assets", "assets")
 	h.server.GET("/", HandleIndex)
 	h.server.GET("/auth/twitch", twitchHandler.handleAuth)
 	h.server.GET("/auth/twitch/redirect", twitchHandler.handleRedirect)

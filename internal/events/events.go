@@ -1,12 +1,16 @@
 package events
 
 import (
+	"fmt"
+
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/badu/bus"
 )
 
 func Dispatch[T any](event T) {
-	logger.Debugf("Dispatching event '%T'", event)
+	if fmt.Sprintf("%T", event) != "*time.Time" {
+		logger.Debugf("Dispatching event '%T'", event)
+	}
 	bus.Pub(event)
 }
 

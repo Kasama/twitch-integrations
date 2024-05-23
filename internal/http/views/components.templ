@@ -23,8 +23,10 @@ templ wsHotReload() {
   };
   ws.onclose = function (event) {
     if (hasOpened) {
+      console.log("hot-reload websocket closed, possibly reloading");
       setInterval(() => {
         fetch("/api/livez").then(() => {
+          console.log("api is now alive, reloading");
           loc.reload()
         }).catch(() => { });
       }, 20); // every 20ms is good enough for this to reload asap
