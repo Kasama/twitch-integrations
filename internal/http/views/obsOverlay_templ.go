@@ -14,6 +14,13 @@ import "strings"
 import "fmt"
 import "github.com/nicklaw5/helix/v2"
 
+func mockUser() *helix.User {
+	return &helix.User{
+		DisplayName:     "itsKasama",
+		ProfileImageURL: "https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
+	}
+}
+
 func OBSOverlay() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
@@ -27,15 +34,7 @@ func OBSOverlay() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><!-- <div class={ \"text-white\" , fontSize(12), textShadow(8, \"#333\" ) }>Coisas escritas</div> --><!-- <div class={ \"text-rose-400\" , fontSize(4), anotherTextShadow() }>\uf131 Coisas escritas</div> --><style type=\"text/css\">\n    @keyframes wavy {\n      0% {\n        top: 0px;\n      }\n\n      50% {\n        top: -15px;\n      }\n\n      100% {\n        top: 0px;\n      }\n    }\n\n    .msn-notification.htmx-added,\n    .msn-notification.htmx-swapping {\n      opacity: 0;\n      transform: translate(0, 300px);\n    }\n\n    .msn-notification {\n      opacity: 1;\n      transition: all 1s ease-out;\n    }\n  </style><div hx-ext=\"sse\" sse-connect=\"/api/sse\"><div sse-swap=\"force_muted\" hx-swap=\"innerHTML\"></div><div sse-swap=\"user_theme_played\" hx-swap=\"innerHTML settle:2s\"></div><div sse-swap=\"community_coin\" hx-swap=\"innerHTML settle:10s\"></div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = MsnNotification(&helix.User{}, "#fff").Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><style type=\"text/css\">\n    @keyframes wavy {\n      0% {\n        top: 0px;\n      }\n\n      50% {\n        top: -15px;\n      }\n\n      100% {\n        top: 0px;\n      }\n    }\n\n    .msn-notification.htmx-added,\n    .msn-notification.htmx-swapping {\n      opacity: 0;\n      transform: translate(0, 300px);\n    }\n\n    .msn-notification {\n      opacity: 1;\n      transition: all 1s ease-out;\n    }\n  </style><div hx-ext=\"sse\" sse-connect=\"/api/sse\"><div sse-swap=\"force_muted\" hx-swap=\"innerHTML\"></div><div sse-swap=\"user_theme_played\" hx-swap=\"innerHTML settle:2s\"></div><div sse-swap=\"community_coin\" hx-swap=\"innerHTML settle:10s\"></div></div></body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -239,7 +238,7 @@ func ForceMuted(time string, cause string) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(time)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 86, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 90, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -274,7 +273,7 @@ func ForceMuted(time string, cause string) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(cause)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 89, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 93, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -357,7 +356,7 @@ func wavyText(text string) templ.Component {
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(string(letter))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 112, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/obsOverlay.templ`, Line: 116, Col: 72}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {

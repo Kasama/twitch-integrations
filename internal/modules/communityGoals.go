@@ -14,7 +14,7 @@ import (
 )
 
 const coin_web_event_name = "community_coin"
-const coin_timeout = 20 * time.Second
+const coin_timeout = 25 * time.Second
 
 type CommunityGoalsModule struct {
 	showingCoinUntil         time.Time
@@ -234,6 +234,8 @@ func (m *CommunityGoalsModule) handleCaptureEvent(event *CommunityGoalCaptureEve
 		}
 	}
 
+	PlayMp3URL("https://www.myinstants.com/media/sounds/8d82b5_super_mario_bros_coin_sound_effect.mp3")
+
 	return nil
 }
 
@@ -278,7 +280,7 @@ func (m *CommunityGoalsModule) handleCommand(msg *twitch.PrivateMessage) error {
 		logger.Debugf("Collected coin, count: %d", m.currentGoalCommands)
 	}
 
-	if m.currentGoalCommands >= 2 {
+	if m.currentGoalCommands >= 1 {
 		m.currentGoalCommands = 0
 		beneficiaries := make([]*twitch.User, 0, len(m.currentGoalBeneficiaries))
 		for _, b := range m.currentGoalBeneficiaries {

@@ -14,23 +14,20 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const twitchAuthToken = "twitch-auth-token"
-const twitchRefreshToken = "twitch-refresh-token"
-const twitchTokenExpiration = "twitch-token-expiration"
 const commonTimeFormat = time.RFC3339Nano
 
 func TwitchAuthFromCookies(c echo.Context, twitchConfig *twitch.TwitchConfig) (*twitch.TwitchAuth, error) {
-	authToken, err := c.Cookie(twitchAuthToken)
+	authToken, err := c.Cookie(twitchCookiePrefix + "-" + authTokenCookieName)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := c.Cookie(twitchRefreshToken)
+	refreshToken, err := c.Cookie(twitchCookiePrefix + "-" + refreshTokenCookieName)
 	if err != nil {
 		return nil, err
 	}
 
-	expiry, err := c.Cookie(twitchTokenExpiration)
+	expiry, err := c.Cookie(twitchCookiePrefix + "-" + tokenExpirationCookieName)
 	if err != nil {
 		return nil, err
 	}
@@ -44,24 +41,6 @@ func TwitchAuthFromCookies(c echo.Context, twitchConfig *twitch.TwitchConfig) (*
 		},
 		twitchConfig,
 	), nil
-}
-
-func SaveToCookies(c echo.Context, t *twitch.TwitchAuth) {
-	c.SetCookie(&http.Cookie{
-		Name:  twitchAuthToken,
-		Value: t.AccessToken,
-		Path:  "/",
-	})
-	c.SetCookie(&http.Cookie{
-		Name:  twitchRefreshToken,
-		Value: t.RefreshToken,
-		Path:  "/",
-	})
-	c.SetCookie(&http.Cookie{
-		Name:  twitchTokenExpiration,
-		Value: t.Expiry.Format(commonTimeFormat),
-		Path:  "/",
-	})
 }
 
 type TwitchHandler struct {
@@ -93,9 +72,9 @@ func (t *TwitchHandler) handleRedirect(c echo.Context) error {
 	}
 
 	auth := twitch.NewTwitchAuth(token, t.twitchConfig)
-	SaveToCookies(c, auth)
+	SaveTokenToCookies(c, twitchCookiePrefix, auth.Token)
 
-	events.Dispatch[*twitch.TwitchAuth](auth)
+	events.Dispatch(auth)
 
 	return c.Redirect(http.StatusTemporaryRedirect, "/")
 }

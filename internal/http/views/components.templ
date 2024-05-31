@@ -8,32 +8,52 @@ templ title(text string) {
 
 templ wsHotReload() {
 	<script>
-  let loc = window.location;
-  let uri = "ws:";
-  if (loc.protocol === "https:") {
-    uri = "wss:";
-  }
-  uri += "//" + loc.host;
-  uri += "/ws/dev/hot-reload";
-
-  ws = new WebSocket(uri);
-  hasOpened = false;
-  ws.onopen = function (event) {
-    hasOpened = true;
-  };
-  ws.onclose = function (event) {
-    if (hasOpened) {
-      console.log("hot-reload websocket closed, possibly reloading");
-      setInterval(() => {
-        fetch("/api/livez").then(() => {
-          console.log("api is now alive, reloading");
-          loc.reload()
-        }).catch(() => { });
-      }, 20); // every 20ms is good enough for this to reload asap
-    } else {
-      console.warn("hot-reload websocket closed, but it never opened, assuming hot-reload is not supported (i.e. is production)")
+  function wsConnect() {
+    let loc = window.location;
+    let uri = "ws:";
+    if (loc.protocol === "https:") {
+      uri = "wss:";
     }
-  };
+    uri += "//" + loc.host;
+    uri += "/ws/dev/hot-reload";
+
+    var isNavigating = false;
+
+    ws = new WebSocket(uri);
+    hasOpened = false;
+    ws.onopen = function (event) {
+      hasOpened = true;
+    };
+
+    window.addEventListener("navigate", (event) => {
+      console.log("is now navigating");
+      isNavigating = true
+    })
+
+    ws.onclose = function (event) {
+      if (hasOpened && !isNavigating) {
+        console.log("hot-reload websocket closed, possibly reloading");
+        fetch("/api/livez").catch(() => {
+          setInterval(() => {
+            fetch("/api/livez").then(() => {
+              console.log("api is now alive, reloading to", loc, window.location);
+              loc.reload()
+            }).catch(() => { });
+          }, 200); // every 20ms is good enough for this to reload asap
+        }).then(() => {
+          console.log("false alarm, api is still up");
+        });
+      } else {
+        console.warn("hot-reload websocket closed, but it never opened, assuming hot-reload is not supported (i.e. is production)")
+      }
+    };
+    ws.onerror = function (event) {
+      console.error("hot-reload websocket error", event);
+      ws.close();
+    };
+  }
+
+  wsConnect();
 
   setInterval(() => {
     fetch("/api/livez")

@@ -3,10 +3,15 @@ package views
 import "fmt"
 import "github.com/nicklaw5/helix/v2"
 
+func mockUser() *helix.User {
+	return &helix.User{
+		DisplayName:     "itsKasama",
+		ProfileImageURL: "https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
+	}
+}
+
 templ OBSOverlay() {
 	<body>
-		<!-- <div class={ "text-white" , fontSize(12), textShadow(8, "#333" ) }>Coisas escritas</div> -->
-		<!-- <div class={ "text-rose-400" , fontSize(4), anotherTextShadow() }> Coisas escritas</div> -->
 		<style type="text/css">
     @keyframes wavy {
       0% {
@@ -38,7 +43,6 @@ templ OBSOverlay() {
 			<div sse-swap="user_theme_played" hx-swap="innerHTML settle:2s"></div>
 			<div sse-swap="community_coin" hx-swap="innerHTML settle:10s"></div>
 		</div>
-		@MsnNotification(&helix.User{}, "#fff")
 	</body>
 }
 

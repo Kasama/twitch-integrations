@@ -38,8 +38,6 @@ func (t *TwitchEventSubService) handleAuth(auth *internalTwitch.TwitchAuth) erro
 		logger.Errorf("TwitchEventSub client error: %v", err)
 	})
 	client.OnWelcome(func(message twitch.WelcomeMessage) {
-		logger.Debugf("WELCOME: %v\n", message)
-
 		events := []twitch.EventSubscription{
 			twitch.SubStreamOnline,
 			twitch.SubChannelChannelPointsCustomRewardRedemptionAdd,
@@ -49,7 +47,6 @@ func (t *TwitchEventSubService) handleAuth(auth *internalTwitch.TwitchAuth) erro
 		}
 
 		for _, event := range events {
-			logger.Printf("subscribing to %s\n", event)
 			_, err := twitch.SubscribeEvent(twitch.SubscribeRequest{
 				SessionID:   message.Payload.Session.ID,
 				ClientID:    auth.TwitchConfig.ClientId,

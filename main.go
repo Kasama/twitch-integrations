@@ -8,10 +8,9 @@ import (
 	"github.com/Kasama/kasama-twitch-integrations/internal/http"
 	"github.com/Kasama/kasama-twitch-integrations/internal/modules"
 	"github.com/Kasama/kasama-twitch-integrations/internal/services"
+	"github.com/Kasama/kasama-twitch-integrations/internal/spotify"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
 	"github.com/joho/godotenv"
-	"golang.org/x/oauth2"
-	twitchAuth "golang.org/x/oauth2/twitch"
 )
 
 func main() {
@@ -19,12 +18,12 @@ func main() {
 
 	logger := log.Default()
 
-	clientId, exists := os.LookupEnv("TWITCH_CLIENT_ID")
+	twitchClientId, exists := os.LookupEnv("TWITCH_CLIENT_ID")
 	if !exists {
 		logger.Fatal("var TWITCH_CLIENT_ID not found")
 	}
 
-	clientSecret, exists := os.LookupEnv("TWITCH_CLIENT_SECRET")
+	twitchClientSecret, exists := os.LookupEnv("TWITCH_CLIENT_SECRET")
 	if !exists {
 		logger.Fatal("var TWITCH_CLIENT_SECRET not found")
 	}
@@ -37,6 +36,16 @@ func main() {
 	twitchUserId, exists := os.LookupEnv("TWITCH_USERID")
 	if !exists {
 		logger.Fatal("var TWITCH_USERID not found")
+	}
+
+	spotifyClientId, exists := os.LookupEnv("SPOTIFY_CLIENT_ID")
+	if !exists {
+		logger.Fatal("var SPOTIFY_CLIENT_ID not found")
+	}
+
+	spotifyClientSecret, exists := os.LookupEnv("SPOTIFY_CLIENT_SECRET")
+	if !exists {
+		logger.Fatal("var SPOTIFY_CLIENT_SECRET not found")
 	}
 
 	environment, exists := os.LookupEnv("ENVIRONMENT")
@@ -65,36 +74,8 @@ func main() {
 
 	appContext := context.Background()
 
-	oauth2Config := &oauth2.Config{
-		ClientID:     clientId,
-		ClientSecret: clientSecret,
-		Endpoint:     twitchAuth.Endpoint,
-		RedirectURL:  "http://localhost:3000/auth/twitch/redirect",
-		// list of scopes at https://dev.twitch.tv/docs/authentication/scopes/
-		Scopes: []string{
-			"user:read:email",
-			"chat:read",
-			"chat:edit",
-			"channel:bot",
-			"channel:moderate",
-			"user:bot",
-			"user:read:chat",
-			"user:write:chat",
-			"whispers:read",
-			"whispers:edit",
-			"channel:manage:redemptions",
-			"channel:manage:polls",
-			"moderation:read",
-			"moderator:manage:banned_users",
-			"moderator:manage:chat_messages",
-			"moderator:manage:automod",
-			"channel:read:redemptions",
-			"channel:manage:redemptions",
-			"channel:read:predictions",
-			"channel:manage:predictions",
-		},
-	}
-	twitchConfig := twitch.NewTwitchConfig(clientId, clientSecret, twitchUserId, twitchUsername, oauth2Config)
+	twitchConfig := twitch.NewTwitchConfig(twitchClientId, twitchClientSecret, twitchUserId, twitchUsername, "http://localhost:3000/auth/twitch/redirect")
+	spotifyConfig := spotify.NewSpotifyConfig(spotifyClientId, spotifyClientSecret, "http://localhost:3000/auth/spotify/redirect")
 	webEventsModule := modules.NewWebEventsModule()
 
 	// Register modules
@@ -106,15 +87,17 @@ func main() {
 	modules.NewTimeoutModule(twitchUserId).Register()
 	modules.NewUserThemeModule(twitchUsername).Register()
 	modules.NewCommunityGoalsModule(twitchUsername).Register()
+	modules.NewSpotifyModule(appContext, twitchUsername).Register()
+	modules.NewCarteiradaModule(twitchUsername).Register()
 	webEventsModule.Register()
-	// modules.NewSpotifyModule(spotifyConfig.clientId, spotifyConfig.clientSecret).Register()
 
 	// Register services
 	services.NewTwitchChatService(twitchUsername).Register()
 	services.NewTwitchEventSubService(twitchUserId).Register()
 	services.NewOBSService(obsAddress, obsPassword).Register()
 	services.NewTimerService(appContext).Register()
+	services.NewSpotifyService(appContext, spotifyConfig).Register()
 
 	// Start server
-	_ = http.NewHandlers(environment, twitchConfig, webEventsModule).Start("0.0.0.0", "3000")
+	_ = http.NewHandlers(environment, twitchConfig, spotifyConfig, webEventsModule).Start("0.0.0.0", "3000")
 }

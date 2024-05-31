@@ -7,6 +7,7 @@ import (
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
+	services "github.com/Kasama/kasama-twitch-integrations/internal/services"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
@@ -17,13 +18,24 @@ const usualMP3SampleRate beep.SampleRate = beep.SampleRate(44100) // 44.1KHz
 const resamplingQuality = 4
 
 type PlayAudioEvent struct {
-	Reader *io.ReadCloser
+	Reader      *io.ReadCloser
+	pausesMusic bool
 }
 
-func NewPlayAudioEvent(reader *io.ReadCloser) *PlayAudioEvent {
+func NewPlayAudioEvent(reader *io.ReadCloser, pausesMusic bool) *PlayAudioEvent {
 	return &PlayAudioEvent{
 		Reader: reader,
+		pausesMusic: pausesMusic,
 	}
+}
+
+func PlayMp3URL(url string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return
+	}
+
+	events.Dispatch(NewPlayAudioEvent(&resp.Body, false))
 }
 
 type AudioModule struct {
@@ -67,11 +79,13 @@ func (m *AudioModule) handlePlayAudio(event *PlayAudioEvent) error {
 
 		resampled := beep.Resample(resamplingQuality, format.SampleRate, usualMP3SampleRate, streamer)
 
+		events.Dispatch(services.NewEventSpotifyPause())
 		speaker.Play(beep.Seq(resampled, beep.Callback(func() {
 			if m.done != nil {
 				m.done <- true
 				m.done = nil
 			}
+			events.Dispatch(services.NewEventSpotifyPlay(true))
 		})))
 
 		go func() {
@@ -80,6 +94,7 @@ func (m *AudioModule) handlePlayAudio(event *PlayAudioEvent) error {
 			case <-timer.C:
 				if m.stop != nil {
 					m.stop <- struct{}{}
+					events.Dispatch(services.NewEventSpotifyPlay(true))
 				}
 				break
 			case <-m.done:
@@ -119,7 +134,7 @@ func (m *AudioModule) handleStop(message *twitch.PrivateMessage) error {
 }
 
 func (m *AudioModule) handleCommand(message *twitch.PrivateMessage) error {
-	if message.Message != "!play" {
+	if message.Message != "!play-nossa-test" {
 		return nil
 	}
 

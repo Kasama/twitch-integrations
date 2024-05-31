@@ -29,11 +29,41 @@ type TwitchConfig struct {
 	Channel      string
 }
 
-func NewTwitchConfig(clientId, clientSecret, userId, channel string, oauth2config *oauth2.Config) *TwitchConfig {
+func NewTwitchConfig(clientId, clientSecret, userId, channel, redirectURL string) *TwitchConfig {
+	oauth2Config := &oauth2.Config{
+		ClientID:     clientId,
+		ClientSecret: clientSecret,
+		Endpoint:     twitchAuth.Endpoint,
+		RedirectURL:  redirectURL,
+		// list of scopes at https://dev.twitch.tv/docs/authentication/scopes/
+		Scopes: []string{
+			"user:read:email",
+			"chat:read",
+			"chat:edit",
+			"channel:bot",
+			"channel:moderate",
+			"user:bot",
+			"user:read:chat",
+			"user:write:chat",
+			"whispers:read",
+			"whispers:edit",
+			"channel:manage:redemptions",
+			"channel:manage:polls",
+			"moderation:read",
+			"moderator:manage:banned_users",
+			"moderator:manage:chat_messages",
+			"moderator:manage:automod",
+			"channel:read:redemptions",
+			"channel:manage:redemptions",
+			"channel:read:predictions",
+			"channel:manage:predictions",
+		},
+	}
+
 	return &TwitchConfig{
 		ClientId:     clientId,
 		ClientSecret: clientSecret,
-		Oauth2config: oauth2config,
+		Oauth2config: oauth2Config,
 		UserID:       userId,
 		Channel:      channel,
 	}

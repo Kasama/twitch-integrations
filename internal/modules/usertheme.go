@@ -66,6 +66,7 @@ func (m *UserThemeModule) setupDatabase() error {
 
 	const createUsedThemeAlreadyTable = `
 		CREATE TABLE IF NOT EXISTS used_theme_already (
+		userName TEXT NOT NULL,
 		userID TEXT PRIMARY KEY NOT NULL);`
 
 	_, err := m.db.Exec(createThemesTable)
@@ -86,42 +87,42 @@ func (m *UserThemeModule) setupDatabase() error {
 	return nil
 }
 
-func (m *UserThemeModule) hasUsedThemeAlready(userID string) bool {
-	if _, exists := m.messagedAlready[userID]; exists {
+func (m *UserThemeModule) hasUsedThemeAlready(username string) bool {
+	if _, exists := m.messagedAlready[username]; exists {
 		return true
 	}
 	if m.db == nil {
 		return false
 	}
-	row := m.db.QueryRow("SELECT userID FROM used_theme_already WHERE userID = ?;", userID)
+	row := m.db.QueryRow("SELECT userID FROM used_theme_already WHERE userName = ?;", username)
 	var uid string
 	err := row.Scan(&uid)
 	if err != nil {
 		return false
 	}
-	m.messagedAlready[uid] = struct{}{}
+	m.messagedAlready[username] = struct{}{}
 	return true
 }
 
-func (m *UserThemeModule) setUsedThemeAlready(userID string) {
+func (m *UserThemeModule) setUsedThemeAlready(userID, username string) {
 	if m.db == nil {
 		logger.Errorf("Database is not initialized")
 		return
 	}
-	_, err := m.db.Exec("INSERT INTO used_theme_already (userID) VALUES (?) ON CONFLICT(userID) DO NOTHING;", userID)
+	_, err := m.db.Exec("INSERT INTO used_theme_already (userID, userName) VALUES (?, ?) ON CONFLICT(userID) DO NOTHING;", userID, username)
 	if err != nil {
 		logger.Errorf("Failed to set used theme already: %s", err.Error())
 	}
-	m.messagedAlready[userID] = struct{}{}
+	m.messagedAlready[username] = struct{}{}
 }
 
-func (m *UserThemeModule) deleteUsedThemeAlready(userID string) {
-	delete(m.messagedAlready, userID)
+func (m *UserThemeModule) deleteUsedThemeAlready(username string) {
+	delete(m.messagedAlready, username)
 	if m.db == nil {
 		logger.Errorf("Database is not initialized")
 		return
 	}
-	_, err := m.db.Exec("DELETE FROM used_theme_already WHERE userID = ?;", userID)
+	_, err := m.db.Exec("DELETE FROM used_theme_already WHERE userName = ?;", username)
 	if err != nil {
 		logger.Errorf("Failed to clear used_themes_already table", err.Error())
 	}
@@ -237,7 +238,7 @@ func (m *UserThemeModule) handleTheme(message *twitch.PrivateMessage) error {
 		return nil
 	}
 
-	if m.hasUsedThemeAlready(message.User.ID) {
+	if m.hasUsedThemeAlready(treatUserName(message.User.DisplayName)) {
 		// User has sent messages already, ignore them
 		return nil
 	}
@@ -260,8 +261,8 @@ func (m *UserThemeModule) handleTheme(message *twitch.PrivateMessage) error {
 		return err
 	}
 
-	m.setUsedThemeAlready(message.User.ID)
-	events.Dispatch(NewPlayAudioEvent(&resp.Body))
+	m.setUsedThemeAlready(message.User.ID, treatUserName(message.User.DisplayName))
+	events.Dispatch(NewPlayAudioEvent(&resp.Body, true))
 	users, _ := m.helix.GetUsers(&helix.UsersParams{
 		IDs: []string{message.User.ID},
 	})
@@ -366,7 +367,7 @@ func (m *UserThemeModule) handleReset(message *twitch.PrivateMessage) error {
 		m.clearUsedThemes()
 	}
 
-	m.deleteUsedThemeAlready(message.User.ID)
+	m.deleteUsedThemeAlready(treatUserName(name))
 	logger.Debugf("Reset theme for %s. Users are: %v", name, m.messagedAlready)
 
 	return nil

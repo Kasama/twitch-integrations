@@ -3,6 +3,7 @@ package modules
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
@@ -27,7 +28,7 @@ func (e *WebEvent) Dispatch() {
 }
 
 func (e *WebEvent) Write(w io.Writer) error {
-	_, err := fmt.Fprintf(w, "event: %s\ndata: %s\n\n", e.name, e.data)
+	_, err := fmt.Fprintf(w, "event: %s\ndata: %s\n\n", e.name, strings.ReplaceAll(e.data, "\n", ""))
 	if err != nil {
 		return err
 	}
@@ -68,10 +69,10 @@ func (m *WebEventsModule) HandleSSE(c echo.Context) error {
 			return nil
 		case e := <-eventConsumer:
 			err := e.Write(resp)
+			resp.Flush()
 			if err != nil {
 				return err
 			}
-			resp.Flush()
 		}
 	}
 }

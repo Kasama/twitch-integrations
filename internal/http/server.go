@@ -7,20 +7,30 @@ import (
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/Kasama/kasama-twitch-integrations/internal/modules"
+	"github.com/Kasama/kasama-twitch-integrations/internal/spotify"
 	"github.com/Kasama/kasama-twitch-integrations/internal/twitch"
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"golang.org/x/oauth2"
 )
 
+const twitchCookiePrefix = "twitch"
+const spotifyCookiePrefix = "spotify"
+const authTokenCookieName = "auth-token"
+const refreshTokenCookieName = "refresh-token"
+const tokenExpirationCookieName = "token-expiration"
+
 type Handlers struct {
-	server       *echo.Echo
-	logger       logger.Logger
-	environment  string
-	twitchConfig *twitch.TwitchConfig
-	twitchAuth   *twitch.TwitchAuth
-	webEvents    *modules.WebEventsModule
+	server        *echo.Echo
+	logger        logger.Logger
+	environment   string
+	twitchConfig  *twitch.TwitchConfig
+	spotifyConfig *spotify.SpotifyConfig
+	twitchAuth    *twitch.TwitchAuth
+	spotifyAuth   *spotify.SpotifyAuth
+	webEvents     *modules.WebEventsModule
 }
 
 type State struct {
@@ -32,24 +42,53 @@ func Render(c echo.Context, statusCode int, t templ.Component) error {
 	return t.Render(c.Request().Context(), c.Response().Writer)
 }
 
-func NewHandlers(env string, twitchConfig *twitch.TwitchConfig, webEvents *modules.WebEventsModule) *Handlers {
+func NewHandlers(env string, twitchConfig *twitch.TwitchConfig, spotifyConfig *spotify.SpotifyConfig, webEvents *modules.WebEventsModule) *Handlers {
 	return &Handlers{
-		server:       echo.New(),
-		logger:       logger.New("twitch_helper", log.DEBUG),
-		environment:  env,
-		twitchConfig: twitchConfig,
-		webEvents:    webEvents,
+		server:        echo.New(),
+		logger:        logger.New("twitch_helper", log.DEBUG),
+		environment:   env,
+		twitchConfig:  twitchConfig,
+		spotifyConfig: spotifyConfig,
+		webEvents:     webEvents,
 	}
+}
+
+func SaveTokenToCookies(c echo.Context, prefix string, t *oauth2.Token) {
+	c.SetCookie(&http.Cookie{
+		Name:  prefix + "-" + authTokenCookieName,
+		Value: t.AccessToken,
+		Path:  "/",
+	})
+	c.SetCookie(&http.Cookie{
+		Name:  prefix + "-" + refreshTokenCookieName,
+		Value: t.RefreshToken,
+		Path:  "/",
+	})
+	c.SetCookie(&http.Cookie{
+		Name:  prefix + "-" + tokenExpirationCookieName,
+		Value: t.Expiry.Format(commonTimeFormat),
+		Path:  "/",
+	})
 }
 
 func (h *Handlers) loadCookieAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		auth, err := TwitchAuthFromCookies(c, h.twitchConfig)
+		twitchAuth, err := TwitchAuthFromCookies(c, h.twitchConfig)
 		if err == nil {
 			if h.twitchAuth == nil {
-				events.Dispatch(auth)
+				h.twitchAuth = twitchAuth
+				events.Dispatch(twitchAuth)
 			}
-			h.twitchAuth = auth
+			h.twitchAuth = twitchAuth
+		}
+
+		spotifyAuth, err := SpotifyAuthFromCookies(c, h.spotifyConfig)
+		if err == nil {
+			if h.spotifyAuth == nil {
+				h.spotifyAuth = spotifyAuth
+				events.Dispatch(spotifyAuth)
+			}
+			h.spotifyAuth = spotifyAuth
 		}
 		return next(c)
 	}
@@ -59,7 +98,10 @@ func (h *Handlers) updateCookieAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		err := next(c)
 		if h.twitchAuth != nil {
-			SaveToCookies(c, h.twitchAuth)
+			SaveTokenToCookies(c, twitchCookiePrefix, h.twitchAuth.Token)
+		}
+		if h.spotifyAuth != nil {
+			SaveTokenToCookies(c, spotifyCookiePrefix, h.spotifyAuth.Token)
 		}
 		return err
 	}
@@ -77,6 +119,7 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.Use(middleware.Recover())
 
 	twitchHandler := NewTwitchHandler(h.twitchConfig)
+	spotifyHandler := NewSpotifyHandler(h.spotifyConfig)
 
 	// API routes
 	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
@@ -88,6 +131,8 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.GET("/", HandleIndex)
 	h.server.GET("/auth/twitch", twitchHandler.handleAuth)
 	h.server.GET("/auth/twitch/redirect", twitchHandler.handleRedirect)
+	h.server.GET("/auth/spotify", spotifyHandler.handleAuth)
+	h.server.GET("/auth/spotify/redirect", spotifyHandler.handleRedirect)
 	h.server.GET("/twitch", twitchHandler.handleIndex)
 	h.server.GET("/obs/background", HandleObsBackground)
 	h.server.GET("/sse", HandleSSEUI)

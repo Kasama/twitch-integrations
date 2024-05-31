@@ -29,10 +29,10 @@ func msnBoxSize() templ.CSSClass {
 
 func msnBoxSizeBig() templ.CSSClass {
 	var templ_7745c5c3_CSSBuilder strings.Builder
-	templ_7745c5c3_CSSBuilder.WriteString(`min-height:420px;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`max-height:420px;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`min-width:800px;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`max-width:800px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`min-height:240px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`max-height:240px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`min-width:440px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`max-width:440px;`)
 	templ_7745c5c3_CSSID := templ.CSSID(`msnBoxSizeBig`, templ_7745c5c3_CSSBuilder.String())
 	return templ.ComponentCSSClass{
 		ID:    templ_7745c5c3_CSSID,
@@ -52,7 +52,9 @@ func gradient(from, to string) templ.CSSClass {
 
 func msnBox() templ.CSSClass {
 	var templ_7745c5c3_CSSBuilder strings.Builder
-	templ_7745c5c3_CSSBuilder.WriteString(`background:linear-gradient( 180deg, rgba(208, 228, 251, 1) 0%, rgba(206, 227, 249, 1) 12.5%, rgba(209, 230, 249, 1) 25%, rgba(213, 233, 250, 1) 36.45833432674408%, rgba(221, 236, 251, 1) 50%, rgba(227, 241, 253, 1) 63.54166865348816%, rgba(233, 246, 254, 1) 76.5625%, rgba(233, 247, 255, 1) 88.54166865348816%, rgba(228, 244, 255, 1) 100%);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`background:linear-gradient( 180deg, rgba(208, 228, 251, 1) 0%, rgba(206, 227, 249, 1) 12.5%, rgba(209, 230, 249, 1)
+25%, rgba(213, 233, 250, 1) 36.45833432674408%, rgba(221, 236, 251, 1) 50%, rgba(227, 241, 253, 1) 63.54166865348816%,
+rgba(233, 246, 254, 1) 76.5625%, rgba(233, 247, 255, 1) 88.54166865348816%, rgba(228, 244, 255, 1) 100%);`)
 	templ_7745c5c3_CSSBuilder.WriteString(`border-radius:6px;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`padding:6px 12px 4px 12px;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`display:flex;`)
@@ -61,7 +63,8 @@ func msnBox() templ.CSSClass {
 	templ_7745c5c3_CSSBuilder.WriteString(`align-items:flex-start;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`justify-content:flex-start;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`position:relative;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`box-shadow:inset -1px -1px 0px 0px rgba(97, 211, 244, 0.8), inset 1px 1px 0px 0px rgba(255, 255, 255, 1), 0px 0px 10px 0px rgba(0, 0, 0, 0.9);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`box-shadow:inset -1px -1px 0px 0px rgba(97, 211, 244, 0.8), inset 1px 1px 0px 0px rgba(255, 255, 255, 1), 0px 0px 10px
+0px rgba(0, 0, 0, 0.9);`)
 	templ_7745c5c3_CSSID := templ.CSSID(`msnBox`, templ_7745c5c3_CSSBuilder.String())
 	return templ.ComponentCSSClass{
 		ID:    templ_7745c5c3_CSSID,
@@ -74,7 +77,7 @@ func msnTitle() templ.CSSClass {
 	templ_7745c5c3_CSSBuilder.WriteString(`color:#383838;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`text-align:left;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`font-family:"SegoeUi-Regular", sans-serif;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`font-size:12px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`font-size:24px;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`font-weight:400;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`position:relative;`)
 	templ_7745c5c3_CSSID := templ.CSSID(`msnTitle`, templ_7745c5c3_CSSBuilder.String())
@@ -86,8 +89,8 @@ func msnTitle() templ.CSSClass {
 
 func msnBackgroundPosition() templ.CSSClass {
 	var templ_7745c5c3_CSSBuilder strings.Builder
-	templ_7745c5c3_CSSBuilder.WriteString(`left:calc(50% - 94.5px);`)
-	templ_7745c5c3_CSSBuilder.WriteString(`right:calc(50% - 28px);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`left:calc(50% - 183.5px);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`top:calc(50% - 26px);`)
 	templ_7745c5c3_CSSID := templ.CSSID(`msnBackgroundPosition`, templ_7745c5c3_CSSBuilder.String())
 	return templ.ComponentCSSClass{
 		ID:    templ_7745c5c3_CSSID,
@@ -100,12 +103,12 @@ func msnAvatar() templ.CSSClass {
 	templ_7745c5c3_CSSBuilder.WriteString(`border-radius:2px;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`border-style:solid;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`border-color:rgba(255, 255, 255, 0.5);`)
-	templ_7745c5c3_CSSBuilder.WriteString(`border-width:1px;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`width:48px;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`height:48px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`border-width:2px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`width:92px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`height:92px;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`position:absolute;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`left:calc(50% - 90.5px);`)
-	templ_7745c5c3_CSSBuilder.WriteString(`top:calc(50% - 30px);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`left:calc(50% - 181px);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`top:calc(50% - 24px);`)
 	templ_7745c5c3_CSSBuilder.WriteString(`object-fit:cover;`)
 	templ_7745c5c3_CSSID := templ.CSSID(`msnAvatar`, templ_7745c5c3_CSSBuilder.String())
 	return templ.ComponentCSSClass{
@@ -119,7 +122,7 @@ func msnText(fontWeight string) templ.CSSClass {
 	templ_7745c5c3_CSSBuilder.WriteString(`color:#383838;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`text-align:left;`)
 	templ_7745c5c3_CSSBuilder.WriteString(`font-family:"SegoeUi-Semibold", sans-serif;`)
-	templ_7745c5c3_CSSBuilder.WriteString(`font-size:12px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`font-size:30px;`)
 	templ_7745c5c3_CSSBuilder.WriteString(string(templ.SanitizeCSS(`font-weight`, templ.SafeCSSProperty(fontWeight))))
 	templ_7745c5c3_CSSBuilder.WriteString(`position:relative;`)
 	templ_7745c5c3_CSSID := templ.CSSID(`msnText`, templ_7745c5c3_CSSBuilder.String())
@@ -156,7 +159,7 @@ func MsnNotification(user *helix.User, color string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 = []any{"absolute", absolutePos(92, 90)}
+		var templ_7745c5c3_Var2 = []any{"absolute", absolutePos(86, 86)}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -178,7 +181,7 @@ func MsnNotification(user *helix.User, color string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 = []any{"flex", "flex-col", "rounded-xl", gradient("#e5f4ff", "#d0e5fb"), msnBoxSize(), msnBox()}
+		var templ_7745c5c3_Var4 = []any{"flex", "flex-col", "rounded-xl", gradient("#e5f4ff", "#d0e5fb"), msnBoxSizeBig(), msnBox()}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -196,7 +199,7 @@ func MsnNotification(user *helix.User, color string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"flex flex-row justify-between self-stretch\"><img src=\"/assets/kisspng-computer-wallpaper-technology-green-actions-im-msn-5-ab-0-bdd-1200254-20.png\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"flex flex-row justify-between self-stretch\"><img class=\"w-8\" src=\"/assets/kisspng-computer-wallpaper-technology-green-actions-im-msn-5-ab-0-bdd-1200254-20.png\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -222,15 +225,15 @@ func MsnNotification(user *helix.User, color string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = iconClose(templ.Attributes{"class": "shrink-0 w-1.5 h-1.5 relative overflow-visible"}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = iconClose(templ.Attributes{"class": "shrink-0 w-3 h-3 relative overflow-visible"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col items-start justify-start self-stretch shrink-0 relative gap-2\"><div class=\"flex flex-row gap-2.5 items-center justify-start self-stretch shrink-0 relative\"><div class=\"shrink-0 w-14 h-14 static\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col items-start justify-start self-stretch shrink-0 relative gap-4\"><div class=\"flex flex-row gap-5 items-center justify-start self-stretch shrink-0 relative\"><div class=\"shrink-0 w-28 h-28 static\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 = []any{"w-14", "h-14", "absolute", "overflow-visible", msnBackgroundPosition()}
+		var templ_7745c5c3_Var8 = []any{"absolute", "overflow-visible", msnBackgroundPosition()}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var8...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -252,7 +255,7 @@ func MsnNotification(user *helix.User, color string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = iconBackground(templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = iconBackground(templ.Attributes{"class": "w-24 h-auto"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -285,13 +288,13 @@ func MsnNotification(user *helix.User, color string) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(user.ProfileImageURL)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/msnNotification.templ`, Line: 92, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/msnNotification.templ`, Line: 98, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><div class=\"relative flex-1 justify-start align-start gap-0 flex flex-col\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><div class=\"relative flex-1 justify-start align-start gap-0 flex flex-col pt-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -320,7 +323,7 @@ func MsnNotification(user *helix.User, color string) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(user.DisplayName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/msnNotification.templ`, Line: 95, Col: 76}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/msnNotification.templ`, Line: 101, Col: 76}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
