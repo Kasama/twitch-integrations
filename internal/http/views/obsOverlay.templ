@@ -40,8 +40,10 @@ templ OBSOverlay() {
   </style>
 		<div hx-ext="sse" sse-connect="/api/sse">
 			<div sse-swap="force_muted" hx-swap="innerHTML"></div>
+			<div sse-swap="gringou" hx-swap="innerHTML"></div>
 			<div sse-swap="user_theme_played" hx-swap="innerHTML settle:2s"></div>
 			<div sse-swap="community_coin" hx-swap="innerHTML settle:10s"></div>
+			<div sse-swap="chopan_phrase" hx-swap="innerHTML settle:2s"></div>
 		</div>
 	</body>
 }
@@ -96,6 +98,20 @@ templ ForceMuted(time string, cause string) {
 	</div>
 }
 
+templ Gringou(time string, cause string) {
+	<div class={ "absolute" , absolutePos(85, 50) }>
+		<div class="flex flex-col items-center">
+			<div class={ "text-blue-400" , "font-bold" , fontSize(4) }>
+				<i class="fa-solid fa-flag-usa"></i>
+				<span>Gringado por { time }</span>
+			</div>
+			<div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
+				<span>- { cause }</span>
+			</div>
+		</div>
+	</div>
+}
+
 css textColor(color string) {
 	color: { templ.SafeCSSProperty(color) };
 }
@@ -125,6 +141,18 @@ templ UserTheme(user *helix.User, color string) {
 				@wavyText(user.DisplayName)
 			</span>
 			<span class={ "text-blue-500" , "font-bold" , fontSize(1) }>chegou</span>
+		</div>
+	</div>
+}
+
+css scale(size int) {
+  transform: { templ.SafeCSSProperty(fmt.Sprintf("scale(%d)", size)) };
+}
+
+templ ChopanPhrase(imageUrl string) {
+	<div hx-ext="remove-me" remove-me="5s">
+		<div class={ "absolute" , absolutePos(10, 50), scale(4) }>
+			<img src={ imageUrl } alt=""/>
 		</div>
 	</div>
 }

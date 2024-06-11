@@ -225,9 +225,6 @@ func (m *UserThemeModule) handleHelixTwitchClient(client *helix.Client) error {
 }
 
 func (m *UserThemeModule) handleStartStream(e *obsEvents.StreamStateChanged) error {
-	if e.OutputActive {
-		return nil
-	}
 	m.clearUsedThemes()
 	return nil
 }
@@ -263,13 +260,20 @@ func (m *UserThemeModule) handleTheme(message *twitch.PrivateMessage) error {
 
 	m.setUsedThemeAlready(message.User.ID, treatUserName(message.User.DisplayName))
 	events.Dispatch(NewPlayAudioEvent(&resp.Body, true))
-	users, _ := m.helix.GetUsers(&helix.UsersParams{
+	users, err := m.helix.GetUsers(&helix.UsersParams{
 		IDs: []string{message.User.ID},
 	})
+	if err != nil {
+		return err
+	}
 
 	user := users.Data.Users[0]
 
-	events.Dispatch(NewWebEvent("user_theme_played", views.RenderToString(views.MsnNotification(&user, message.User.Color))))
+	if user.DisplayName == "ymalboro_x" {
+		events.Dispatch(NewWebEvent("user_theme_played", views.RenderToString(views.MsnNotification(&user, message.User.Color))))
+	} else {
+		events.Dispatch(NewWebEvent("user_theme_played", views.RenderToString(views.MsnNotification(&user, message.User.Color))))
+	}
 
 	return nil
 }

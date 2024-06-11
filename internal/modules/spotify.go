@@ -84,6 +84,9 @@ func (m *SpotifyModule) handleSongRequestReward(reward *twitchEventSub.EventChan
 		if pathParts[1] == "track" {
 			trackID = pathParts[2]
 		}
+		if pathParts[2] == "track" {
+			trackID = pathParts[3]
+		}
 	} else if strings.Contains(query, "youtube.com") || strings.Contains(query, "youtu.be") {
 		resp, err := http.Get(strings.TrimSpace(query))
 		if err != nil {
@@ -139,7 +142,7 @@ func (m *SpotifyModule) handleSongRequestReward(reward *twitchEventSub.EventChan
 	track, _ := m.client.GetTrack(m.ctx, spotify.ID(trackID))
 	if track != nil {
 		if m.twitchChatClient != nil {
-			m.twitchChatClient.Say(m.twitchChannel, fmt.Sprintf("Adicionado %s - %s na fila", track.Artists[0].Name, track.Name))
+			m.twitchChatClient.Say(m.twitchChannel, fmt.Sprintf("Adicionado \"%s - %s\" na fila", track.Artists[0].Name, track.Name))
 		}
 	}
 	_ = m.client.QueueSong(m.ctx, spotify.ID(trackID))

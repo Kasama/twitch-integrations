@@ -124,6 +124,7 @@ func (h *Handlers) RegisterRoutes() {
 	// API routes
 	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
 	h.server.GET("/api/sse", h.webEvents.HandleSSE)
+	h.server.GET("/api/keypad-event/:id", HandleMacropad)
 	h.server.GET("/ws/dev/hot-reload", handleWSHotReload)
 
 	// Web UI routes

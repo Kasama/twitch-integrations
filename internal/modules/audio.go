@@ -24,7 +24,7 @@ type PlayAudioEvent struct {
 
 func NewPlayAudioEvent(reader *io.ReadCloser, pausesMusic bool) *PlayAudioEvent {
 	return &PlayAudioEvent{
-		Reader: reader,
+		Reader:      reader,
 		pausesMusic: pausesMusic,
 	}
 }
@@ -79,13 +79,17 @@ func (m *AudioModule) handlePlayAudio(event *PlayAudioEvent) error {
 
 		resampled := beep.Resample(resamplingQuality, format.SampleRate, usualMP3SampleRate, streamer)
 
-		events.Dispatch(services.NewEventSpotifyPause())
+		if event.pausesMusic {
+			events.Dispatch(services.NewEventSpotifyPause())
+		}
 		speaker.Play(beep.Seq(resampled, beep.Callback(func() {
 			if m.done != nil {
 				m.done <- true
 				m.done = nil
 			}
-			events.Dispatch(services.NewEventSpotifyPlay(true))
+			if event.pausesMusic {
+				events.Dispatch(services.NewEventSpotifyPlay(true))
+			}
 		})))
 
 		go func() {
@@ -94,7 +98,9 @@ func (m *AudioModule) handlePlayAudio(event *PlayAudioEvent) error {
 			case <-timer.C:
 				if m.stop != nil {
 					m.stop <- struct{}{}
-					events.Dispatch(services.NewEventSpotifyPlay(true))
+					if event.pausesMusic {
+						events.Dispatch(services.NewEventSpotifyPlay(true))
+					}
 				}
 				break
 			case <-m.done:

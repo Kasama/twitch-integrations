@@ -31,7 +31,7 @@ func Index() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main class=\"flex-1 bg-gray-100 dark:bg-gray-950 py-12\"><div class=\"container mx-auto px-4 flex flex-col\"><div>Hello World</div><button><a href=\"/auth/spotify\">Authenticate with spotify</a></button> <button><a href=\"/auth/twitch\">Authenticate with twitch</a></button> <button><a href=\"/twitch\">Go to twitch dashboard</a></button> <button><a href=\"/obsOverlay\">OBS Overlay</a></button></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main class=\"flex-1 bg-gray-100 dark:bg-gray-950 py-12\"><div class=\"container mx-auto px-4 flex flex-col\"><div>Hello World</div><button><a href=\"/auth/spotify\">Authenticate with spotify</a></button> <button><a href=\"/auth/twitch\">Authenticate with twitch</a></button> <button><a href=\"/twitch\">Go to twitch dashboard</a></button> <button><a href=\"/obsOverlay\">OBS Overlay</a></button> <button><a href=\"https://dashboard.twitch.tv/u/itskasama/viewer-rewards/channel-points/rewards\">Channel rewards configs</a></button></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -1,0 +1,149 @@
+.component,
+.component * {
+  box-sizing: border-box;
+}
+.component {
+  background: linear-gradient(
+    180deg,
+    rgba(208, 228, 251, 1) 0%,
+    rgba(206, 227, 249, 1) 12.5%,
+    rgba(209, 230, 249, 1) 25%,
+    rgba(213, 233, 250, 1) 36.45833432674408%,
+    rgba(221, 236, 251, 1) 50%,
+    rgba(227, 241, 253, 1) 63.54166865348816%,
+    rgba(233, 246, 254, 1) 76.5625%,
+    rgba(233, 247, 255, 1) 88.54166865348816%,
+    rgba(228, 244, 255, 1) 100%
+  );
+  border-radius: 6px;
+  padding: 6px 12px 4px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  position: relative;
+  box-shadow: inset -1px -1px 0px 0px rgba(97, 211, 244, 0.8),
+    inset 1px 1px 0px 0px rgba(255, 255, 255, 1),
+    0px 0px 10px 0px rgba(0, 0, 0, 0.9);
+}
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.title {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  position: relative;
+}
+.kisspng-computer-wallpaper-technology-green-actions-im-msn-5-ab-0-bdd-1200254-2 {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  position: relative;
+  object-fit: cover;
+}
+.windows-live-messenger {
+  color: #383838;
+  text-align: left;
+  font-family: "SegoeUi-Regular", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  position: relative;
+}
+.close {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  position: relative;
+  overflow: visible;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.user {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.profile {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  position: static;
+}
+.background {
+  width: 56px;
+  height: 56px;
+  position: absolute;
+  left: calc(50% - 79.5px);
+  top: calc(50% - 28px);
+  overflow: visible;
+}
+.avatar {
+  border-radius: 2px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.5);
+  border-width: 1px;
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  left: calc(50% - 75.5px);
+  top: calc(50% - 24px);
+  object-fit: cover;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex: 1;
+  position: relative;
+}
+.red-flower {
+  color: #383838;
+  text-align: left;
+  font-family: "SegoeUi-Semibold", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+}
+.has-just-signed-in {
+  color: #383838;
+  text-align: left;
+  font-family: "SegoeUi-Regular", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  position: relative;
+}
+.options {
+  color: #0066cc;
+  text-align: right;
+  font-family: "SegoeUi-Regular", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  position: relative;
+  align-self: stretch;
+}
