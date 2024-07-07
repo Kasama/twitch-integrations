@@ -96,6 +96,7 @@ func (m *CountersModule) Register() {
 	}
 
 	events.Register(m.handleKasamadaEvent)
+	events.Register(m.handleKasamadaMessage)
 	events.Register(m.handleTwitchChatClient)
 	events.Register(m.handleCommand)
 }
@@ -120,6 +121,31 @@ func (m *CountersModule) handleCommand(msg *twitch.PrivateMessage) error {
 	}
 
 	m.sendTwitchChatMessage(fmt.Sprintf("%s: %d", counter, count))
+
+	return nil
+}
+
+func (m *CountersModule) handleKasamadaMessage(msg *twitch.PrivateMessage) error {
+	if _, ok := msg.User.Badges["broadcaster"]; !ok {
+		return nil
+	}
+
+	if !strings.HasPrefix(msg.Message, "!add-kasamada") {
+		return nil
+	}
+
+	err := m.incrementCounter(KasamadasCount)
+	if err != nil {
+		logger.Errorf("Failed to increment counter: %s", err.Error())
+		return err
+	}
+
+	count, err := m.getCounter(KasamadasCount)
+	if err != nil {
+		return err
+	}
+
+	m.sendTwitchChatMessage(fmt.Sprintf("%s incrementado. Total de %d", KasamadasCount, count))
 
 	return nil
 }

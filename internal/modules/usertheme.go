@@ -259,7 +259,7 @@ func (m *UserThemeModule) handleTheme(message *twitch.PrivateMessage) error {
 	}
 
 	m.setUsedThemeAlready(message.User.ID, treatUserName(message.User.DisplayName))
-	events.Dispatch(NewPlayAudioEvent(&resp.Body, true))
+	events.Dispatch(NewPlayAudioEvent(resp.Body, true))
 	users, err := m.helix.GetUsers(&helix.UsersParams{
 		IDs: []string{message.User.ID},
 	})

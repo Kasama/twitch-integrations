@@ -1,3 +1,4 @@
 .env
 tmp
 run
+spotify_queue

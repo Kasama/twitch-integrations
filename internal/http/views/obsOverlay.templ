@@ -4,15 +4,17 @@ import "fmt"
 import "github.com/nicklaw5/helix/v2"
 
 func mockUser() *helix.User {
-	return &helix.User{
-		DisplayName:     "itsKasama",
-		ProfileImageURL: "https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
-	}
+return &helix.User{
+DisplayName: "itsKasama",
+ProfileImageURL:
+"https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
+}
 }
 
 templ OBSOverlay() {
-	<body>
-		<style type="text/css">
+
+<body>
+  <style type="text/css">
     @keyframes wavy {
       0% {
         top: 0px;
@@ -27,6 +29,16 @@ templ OBSOverlay() {
       }
     }
 
+    @keyframes scroll-text {
+      0% {
+        transform: translateX(0%);
+      }
+
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+
     .msn-notification.htmx-added,
     .msn-notification.htmx-swapping {
       opacity: 0;
@@ -38,121 +50,200 @@ templ OBSOverlay() {
       transition: all 1s ease-out;
     }
   </style>
-		<div hx-ext="sse" sse-connect="/api/sse">
-			<div sse-swap="force_muted" hx-swap="innerHTML"></div>
-			<div sse-swap="gringou" hx-swap="innerHTML"></div>
-			<div sse-swap="user_theme_played" hx-swap="innerHTML settle:2s"></div>
-			<div sse-swap="community_coin" hx-swap="innerHTML settle:10s"></div>
-			<div sse-swap="chopan_phrase" hx-swap="innerHTML settle:2s"></div>
-		</div>
-	</body>
+  <div hx-ext="sse" sse-connect="/api/sse">
+    <div sse-swap="force_muted" hx-swap="innerHTML"></div>
+    <div sse-swap="gringou" hx-swap="innerHTML"></div>
+    <div sse-swap="portugou" hx-swap="innerHTML"></div>
+    <div sse-swap="emou" hx-swap="innerHTML"></div>
+    <div sse-swap="user_theme_played" hx-swap="innerHTML settle:2s"></div>
+    <div sse-swap="community_coin" hx-swap="innerHTML settle:10s"></div>
+    <div sse-swap="chopan_phrase" hx-swap="innerHTML settle:2s"></div>
+    <div sse-swap="music_now_playing" hx-swap="innerHTML"></div>
+  </div>
+</body>
 }
 
 func shadowPos(size int, color string, x string, y string) string {
-	return fmt.Sprintf("%s%dpx %s%dpx 0 %s", x, size, y, size, color)
+return fmt.Sprintf("%s%dpx %s%dpx 0 %s", x, size, y, size, color)
 }
 
 css textShadow(size int, color string) {
-	text-shadow: { templ.SafeCSSProperty(fmt.Sprintf("%s, %s, %s, %s", shadowPos(size/2, color, "-", "-"), shadowPos(size/2,
+text-shadow: { templ.SafeCSSProperty(fmt.Sprintf("%s, %s, %s, %s", shadowPos(size/2, color, "-", "-"), shadowPos(size/2,
 color, "", "-"), shadowPos(size, color, "-", ""), shadowPos(size, color, "", ""))) };
 }
 
 css anotherTextShadow() {
-	text-shadow: -1px -1px 1px rgba(255,255,255,.1), 1px 1px 1px rgba(0,0,0,.5), 2px 2px 4px rgba(0,0,0,.9);
+text-shadow: -1px -1px 1px rgba(255,255,255,.1), 1px 1px 1px rgba(0,0,0,.5), 2px 2px 4px rgba(0,0,0,.9);
 }
 
 css fontSize(size float32) {
-	font-size: { templ.SafeCSSProperty(fmt.Sprintf("%frem", size)) };
+font-size: { templ.SafeCSSProperty(fmt.Sprintf("%frem", size)) };
 }
 
 css absolutePos(x int, y int) {
-	top: { templ.SafeCSSProperty(fmt.Sprintf("%dvh", x)) };
-	left: { templ.SafeCSSProperty(fmt.Sprintf("%dvw", y)) };
-	transform: translate(-50%, -50%);
+top: { templ.SafeCSSProperty(fmt.Sprintf("%dvh", x)) };
+left: { templ.SafeCSSProperty(fmt.Sprintf("%dvw", y)) };
+transform: translate(-50%, -50%);
 }
 
 templ CommunityCoin(x int, y int) {
-	<div class={ "absolute" , absolutePos(x, y) }>
-		<div class="flex flex-col items-center">
-			<div class={ "border-all border-red-500 min-w-10 max-w-10 min-h-10 max-h-10" }>
-				<image
-					src="https://64.media.tumblr.com/34ecb97af549396ce54461835a63d1b3/1fe59baa06bb8c17-d9/s540x810/041f293db97d977df5ccd2cd8b94995aa2f9a34a.gifv"
-				></image>
-			</div>
-			<span class={ "text-white" , anotherTextShadow(), fontSize(1.5) }>!coletar</span>
-		</div>
-	</div>
+<div class={ "absolute" , absolutePos(x, y) }>
+  <div class="flex flex-col items-center">
+    <div class={ "border-all border-red-500 min-w-10 max-w-10 min-h-10 max-h-10" }>
+      <image
+        src="https://64.media.tumblr.com/34ecb97af549396ce54461835a63d1b3/1fe59baa06bb8c17-d9/s540x810/041f293db97d977df5ccd2cd8b94995aa2f9a34a.gifv">
+      </image>
+    </div>
+    <span class={ "text-white" , anotherTextShadow(), fontSize(1.5) }>!coletar</span>
+  </div>
+</div>
 }
 
 templ ForceMuted(time string, cause string) {
-	<div class={ "absolute" , absolutePos(85, 50) }>
-		<div class="flex flex-col items-center">
-			<div class={ "text-rose-400" , "font-bold" , fontSize(4) }>
-				<i class="fa-solid fa-microphone-slash"></i>
-				<span>Calado por { time }</span>
-			</div>
-			<div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
-				<span>- { cause }</span>
-			</div>
-		</div>
-	</div>
+<div class={ "absolute" , absolutePos(85, 50) }>
+  <div class="flex flex-col items-center">
+    <div class={ "text-rose-400" , "font-bold" , fontSize(4) }>
+      <i class="fa-solid fa-microphone-slash"></i>
+      <span>Calado por { time }</span>
+    </div>
+    <div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
+      <span>- { cause }</span>
+    </div>
+  </div>
+</div>
 }
 
 templ Gringou(time string, cause string) {
-	<div class={ "absolute" , absolutePos(85, 50) }>
-		<div class="flex flex-col items-center">
-			<div class={ "text-blue-400" , "font-bold" , fontSize(4) }>
-				<i class="fa-solid fa-flag-usa"></i>
-				<span>Gringado por { time }</span>
-			</div>
-			<div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
-				<span>- { cause }</span>
-			</div>
-		</div>
-	</div>
+<div class={ "absolute" , absolutePos(85, 50) }>
+  <div class="flex flex-col items-center">
+    <div class={ "text-blue-400" , "font-bold" , fontSize(4) }>
+      <i class="fa-solid fa-flag-usa"></i>
+      <span>Gringado por { time }</span>
+    </div>
+    <div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
+      <span>- { cause }</span>
+    </div>
+  </div>
+</div>
+}
+
+templ Portugou(time string, cause string) {
+<div class={ "absolute" , absolutePos(85, 50) }>
+  <div class="flex flex-col items-center">
+    <div class={ "text-blue-400" , "font-bold" , fontSize(4) }>
+      <i class="fa-solid fa-ship"></i>
+      <span>Portugado por { time }</span>
+    </div>
+    <div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
+      <span>- { cause }</span>
+    </div>
+  </div>
+</div>
+}
+
+templ Emou(time string, cause string) {
+<div class={ "absolute" , absolutePos(85, 50) }>
+  <div class="flex flex-col items-center">
+    <div class={ "text-black" , "font-bold" , fontSize(4) }>
+      <i class="fa-solid fa-face-rolling-eyes"></i>
+      <span>Virou emo por { time }</span>
+    </div>
+    <div class={ "text-slate-400" , "-mt-4" , fontSize(3) }>
+      <span>- { cause }</span>
+    </div>
+  </div>
+</div>
 }
 
 css textColor(color string) {
-	color: { templ.SafeCSSProperty(color) };
+color: { templ.SafeCSSProperty(color) };
 }
 
 css wavyLetter(delay string) {
-	animation-name: wavy;
-	animation-duration: 1.3s;
-	animation-timing-function: ease;
-	animation-iteration-count: infinite;
-	animation-delay: { templ.SafeCSSProperty(delay) };
-	position: relative;
-	top: 0;
-	left: 0;
+animation-name: wavy;
+animation-duration: 1.3s;
+animation-timing-function: ease;
+animation-iteration-count: infinite;
+animation-delay: { templ.SafeCSSProperty(delay) };
+position: relative;
+top: 0;
+left: 0;
 }
 
 templ wavyText(text string) {
-	for i, letter := range text {
-		<span class={ wavyLetter(fmt.Sprintf("%dms", i*60)) }>{ string(letter) }</span>
-	}
+for i, letter := range text {
+<span class={ wavyLetter(fmt.Sprintf("%dms", i*60)) }>{ string(letter) }</span>
+}
 }
 
 templ UserTheme(user *helix.User, color string) {
-	<div hx-ext="remove-me" remove-me="5s">
-		<div class={ "absolute" , "fading" , absolutePos(15, 80) }>
-			<span class={ "text-blue-500" , "font-bold" , fontSize(1) }>Abaixa que</span>
-			<span class={ "font-bold" , fontSize(2), textColor(color) }>
-				@wavyText(user.DisplayName)
-			</span>
-			<span class={ "text-blue-500" , "font-bold" , fontSize(1) }>chegou</span>
-		</div>
-	</div>
+<div hx-ext="remove-me" remove-me="5s">
+  <div class={ "absolute" , "fading" , absolutePos(15, 80) }>
+    <span class={ "text-blue-500" , "font-bold" , fontSize(1) }>Abaixa que</span>
+    <span class={ "font-bold" , fontSize(2), textColor(color) }>
+      @wavyText(user.DisplayName)
+    </span>
+    <span class={ "text-blue-500" , "font-bold" , fontSize(1) }>chegou</span>
+  </div>
+</div>
 }
 
 css scale(size int) {
-  transform: { templ.SafeCSSProperty(fmt.Sprintf("scale(%d)", size)) };
+transform: { templ.SafeCSSProperty(fmt.Sprintf("scale(%d)", size)) };
 }
 
 templ ChopanPhrase(imageUrl string) {
-	<div hx-ext="remove-me" remove-me="5s">
-		<div class={ "absolute" , absolutePos(10, 50), scale(4) }>
-			<img src={ imageUrl } alt=""/>
-		</div>
-	</div>
+<div hx-ext="remove-me" remove-me="5s">
+  <div class={ "absolute" , absolutePos(10, 50), scale(4) }>
+    <img src={ imageUrl } alt="" />
+  </div>
+</div>
+}
+
+css fontawesomeBorder() {
+stroke: black;
+stroke-width: 20px;
+}
+
+css textScrollContainer() {
+white-space: nowrap;
+position: absolute;
+overflow: hidden;
+}
+
+css textScroll() {
+display: inline-block;
+padding-left: 100%;
+-moz-animation: scroll-text 15s linear infinite;
+-webkit-animation: scroll-text 15s linear infinite;
+animation: scroll-text 20s linear infinite;
+}
+
+css textScrollSecond() {
+animation-delay: 10s;
+}
+
+templ MusicPlayingScrollingText(artist, song string, second bool) {
+<div class={ textScrollContainer() }>
+  <span class={ textScroll(), templ.KV(textScrollSecond(), second) }>
+    <i class={ "fa-solid" , "fa-music" , fontawesomeBorder(), "px-4" }></i>
+    <span>{ artist }</span> - <span>{ song }</span>
+  </span>
+</div>
+}
+
+templ MusicNowPlaying(song, artist, requester string) {
+<div class={ "absolute" , absolutePos(90, 80) }>
+  <div class={ "text-white" , "font-bold" , anotherTextShadow(), fontSize(2) }>
+    <div>
+      @MusicPlayingScrollingText(artist, song, false)
+      @MusicPlayingScrollingText(artist, song, true)
+    </div>
+    if requester != "" {
+    <div class={ fontSize(1.5), "pt-9" , "text-right" , "min-w-max" , "w-max" }>
+      - de @{ requester }
+    </div>
+    }
+  </div>
+</div>
 }

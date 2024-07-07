@@ -90,10 +90,13 @@ func main() {
 	modules.NewSpotifyModule(appContext, twitchUsername).Register()
 	modules.NewCarteiradaModule(twitchUsername).Register()
 	modules.NewGringouModule().Register()
+	modules.NewEmouModule().Register()
 	modules.NewMacropadModule().Register()
 	modules.NewBesitoModule().Register()
 	modules.NewCountersModule(twitchUsername).Register()
 	modules.NewChopanModule().Register()
+	modules.NewFloresbertoModule().Register()
+	modules.NewCommandsModule(twitchUsername).Register()
 	webEventsModule.Register()
 
 	// Register services

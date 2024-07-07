@@ -18,24 +18,33 @@ const usualMP3SampleRate beep.SampleRate = beep.SampleRate(44100) // 44.1KHz
 const resamplingQuality = 4
 
 type PlayAudioEvent struct {
-	Reader      *io.ReadCloser
+	Reader      io.ReadCloser
 	pausesMusic bool
 }
 
-func NewPlayAudioEvent(reader *io.ReadCloser, pausesMusic bool) *PlayAudioEvent {
+func NewPlayAudioEvent(reader io.ReadCloser, pausesMusic bool) *PlayAudioEvent {
 	return &PlayAudioEvent{
 		Reader:      reader,
 		pausesMusic: pausesMusic,
 	}
 }
 
-func PlayMp3URL(url string) {
+func GetMp3Reader(url string) (io.ReadCloser, error) {
 	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Body, nil
+}
+
+func PlayMp3URL(url string) {
+	resp, err := GetMp3Reader(url)
 	if err != nil {
 		return
 	}
 
-	events.Dispatch(NewPlayAudioEvent(&resp.Body, false))
+	events.Dispatch(NewPlayAudioEvent(resp, false))
 }
 
 type AudioModule struct {
@@ -71,7 +80,7 @@ func (m *AudioModule) handlePlayAudio(event *PlayAudioEvent) error {
 	m.stop = make(chan struct{})
 
 	go func() {
-		streamer, format, err := mp3.Decode(*event.Reader)
+		streamer, format, err := mp3.Decode(event.Reader)
 		if err != nil {
 			logger.Errorf("Failed to decode music: %s", err.Error())
 		}
