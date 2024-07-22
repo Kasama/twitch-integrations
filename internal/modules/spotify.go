@@ -25,20 +25,27 @@ const (
 	PRIORITY_HIGH   uint8 = 3
 )
 
-const spotifyQueueName = "spotify_queue"
+// const spotifyQueueName = "spotify_queue"
+const spotifyQueueName = "spotify_queue_test"
 
 const songRequestRewardID = "35401b62-32aa-4009-ac1e-a5f3015670e8"
 const songRequestPriorityRewardID = "ee3b013d-619b-45d8-8745-71c33bf71e6b"
 const skipSongRewardID = "b062e370-6a64-4537-b513-f83bd1588496"
 
-type SpotifyQueueItem struct {
+const (
+	SongQueueItemTypeSpotify = "spotify"
+	SongQueueItemTypeYoutube = "youtube"
+)
+
+type SongQueueItem struct {
+	Type  string            `json:"type"`
 	Track spotify.FullTrack `json:"track"`
 	User  string            `json:"user"`
 }
 
 type playingState struct {
-	nowPlaying   *SpotifyQueueItem
-	lastDequeued *SpotifyQueueItem
+	nowPlaying   *SongQueueItem
+	lastDequeued *SongQueueItem
 	locked       atomic.Bool
 }
 
@@ -47,7 +54,7 @@ type SpotifyModule struct {
 	client           *spotify.Client
 	twitchChatClient *twitch.Client
 	twitchChannel    string
-	queue            *db.Queue[SpotifyQueueItem]
+	queue            *db.Queue[SongQueueItem]
 	playingState     playingState
 }
 
@@ -63,22 +70,31 @@ func (m *SpotifyModule) Register() {
 }
 
 func NewSpotifyModule(ctx context.Context, twitchUsername string) *SpotifyModule {
-	q, err := db.NewQueue[SpotifyQueueItem](spotifyQueueName)
+	q, err := db.NewQueue[SongQueueItem](spotifyQueueName)
 	if err != nil {
 		logger.Errorf("SpotifyModule: error creating queue: %v", err)
 		return nil
 	}
+
+	logger.Debugf("SpotifyModule: created queue")
+	events.Dispatch(q)
+	logger.Debugf("SpotifyModule: dispatched queue")
+
 	return &SpotifyModule{
 		ctx:           ctx,
 		client:        nil,
 		twitchChannel: twitchUsername,
 		queue:         q,
 		playingState: playingState{
-			nowPlaying:   &SpotifyQueueItem{},
+			nowPlaying:   &SongQueueItem{},
 			lastDequeued: nil,
 			locked:       atomic.Bool{}, // default is false
 		},
 	}
+}
+
+func (m *SpotifyModule) Queue() *db.Queue[SongQueueItem] {
+	return m.queue
 }
 
 func (m *SpotifyModule) handleTwtichChatClient(client *twitch.Client) error {
@@ -186,7 +202,8 @@ func (m *SpotifyModule) handleSongRequestReward(reward *twitchEventSub.EventChan
 		if reward.Reward.ID == songRequestPriorityRewardID {
 			priority = PRIORITY_HIGH
 		}
-		m.queue.Push(priority, SpotifyQueueItem{
+		m.queue.Push(priority, SongQueueItem{
+			Type:  SongQueueItemTypeSpotify,
 			Track: *track,
 			User:  reward.UserName,
 		})
@@ -304,7 +321,7 @@ func (m *SpotifyModule) handleTimer(t *time.Time) error {
 			}
 		}
 	} else {
-		m.playingState.nowPlaying = &SpotifyQueueItem{}
+		m.playingState.nowPlaying = &SongQueueItem{}
 	}
 
 	triggerTime := 5 * time.Second

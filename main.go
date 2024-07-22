@@ -77,6 +77,7 @@ func main() {
 	twitchConfig := twitch.NewTwitchConfig(twitchClientId, twitchClientSecret, twitchUserId, twitchUsername, "http://localhost:3000/auth/twitch/redirect")
 	spotifyConfig := spotify.NewSpotifyConfig(spotifyClientId, spotifyClientSecret, "http://localhost:3000/auth/spotify/redirect")
 	webEventsModule := modules.NewWebEventsModule()
+	spotifyModule := modules.NewSpotifyModule(appContext, twitchUsername)
 
 	// Register modules
 	modules.NewYappingModule(twitchUsername).Register()
@@ -87,9 +88,10 @@ func main() {
 	modules.NewTimeoutModule(twitchUserId).Register()
 	modules.NewUserThemeModule(twitchUsername).Register()
 	modules.NewCommunityGoalsModule(twitchUsername).Register()
-	modules.NewSpotifyModule(appContext, twitchUsername).Register()
+	spotifyModule.Register()
 	modules.NewCarteiradaModule(twitchUsername).Register()
 	modules.NewGringouModule().Register()
+	modules.NewPortugouModule().Register()
 	modules.NewEmouModule().Register()
 	modules.NewMacropadModule().Register()
 	modules.NewBesitoModule().Register()
@@ -105,7 +107,8 @@ func main() {
 	services.NewOBSService(obsAddress, obsPassword).Register()
 	services.NewTimerService(appContext).Register()
 	services.NewSpotifyService(appContext, spotifyConfig).Register()
+	services.NewOmegaStrikersService(appContext).Register()
 
 	// Start server
-	_ = http.NewHandlers(environment, twitchConfig, spotifyConfig, webEventsModule).Start("0.0.0.0", "3000")
+	_ = http.NewHandlers(environment, twitchConfig, spotifyConfig, webEventsModule, spotifyModule.Queue()).Start("0.0.0.0", "3000")
 }

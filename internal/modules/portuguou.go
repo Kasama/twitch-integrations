@@ -8,7 +8,7 @@ import (
 	"github.com/joeyak/go-twitch-eventsub/v2"
 )
 
-const rewardIDPortugou = ""
+const rewardIDPortugou = "7af7f6e9-47b9-4800-a6b8-1998f1a1fbdf"
 const portugouDuration = 1 * time.Minute
 
 type PortugouModule struct{}

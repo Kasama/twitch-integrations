@@ -11,6 +11,7 @@ require (
 	github.com/faiface/beep v1.1.0
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/google/uuid v1.3.0
+	github.com/hpcloud/tail v1.0.0
 	github.com/joeyak/go-twitch-eventsub/v2 v2.0.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
@@ -52,6 +53,8 @@ require (
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
+	gopkg.in/fsnotify.v1 v1.4.7 // indirect
+	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )

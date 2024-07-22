@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Kasama/kasama-twitch-integrations/internal/db"
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/Kasama/kasama-twitch-integrations/internal/modules"
@@ -28,6 +29,7 @@ type Handlers struct {
 	environment   string
 	twitchConfig  *twitch.TwitchConfig
 	spotifyConfig *spotify.SpotifyConfig
+	songQueue     *db.Queue[modules.SongQueueItem]
 	twitchAuth    *twitch.TwitchAuth
 	spotifyAuth   *spotify.SpotifyAuth
 	webEvents     *modules.WebEventsModule
@@ -42,13 +44,14 @@ func Render(c echo.Context, statusCode int, t templ.Component) error {
 	return t.Render(c.Request().Context(), c.Response().Writer)
 }
 
-func NewHandlers(env string, twitchConfig *twitch.TwitchConfig, spotifyConfig *spotify.SpotifyConfig, webEvents *modules.WebEventsModule) *Handlers {
+func NewHandlers(env string, twitchConfig *twitch.TwitchConfig, spotifyConfig *spotify.SpotifyConfig, webEvents *modules.WebEventsModule, queue *db.Queue[modules.SongQueueItem]) *Handlers {
 	return &Handlers{
 		server:        echo.New(),
 		logger:        logger.New("twitch_helper", log.DEBUG),
 		environment:   env,
 		twitchConfig:  twitchConfig,
 		spotifyConfig: spotifyConfig,
+		songQueue:     queue,
 		webEvents:     webEvents,
 	}
 }
@@ -120,6 +123,7 @@ func (h *Handlers) RegisterRoutes() {
 
 	twitchHandler := NewTwitchHandler(h.twitchConfig)
 	spotifyHandler := NewSpotifyHandler(h.spotifyConfig)
+	songQueueHandler := NewSongQueueHandler(h.songQueue)
 
 	// API routes
 	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
@@ -138,6 +142,9 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.GET("/obs/background", HandleObsBackground)
 	h.server.GET("/sse", HandleSSEUI)
 	h.server.GET("/obsOverlay", HandleSSEUI)
+
+	group := h.server.Group("/songQueue")
+	songQueueHandler.RegisterRoutes(group)
 
 	h.server.Logger.Debug("Routes registered")
 	h.server.Logger.Info(h.server.Routes())

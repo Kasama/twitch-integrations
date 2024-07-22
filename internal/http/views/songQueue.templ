@@ -1,0 +1,39 @@
+package views
+
+import "fmt"
+
+templ SongQueuePage(items []templ.Component) {
+	<body>
+		<a href="/">Back home</a>
+		<h1>Song Queue Manager</h1>
+		<ul id="song-queue">
+			@SongQueue(items)
+		</ul>
+	</body>
+}
+
+templ SongQueue(items []templ.Component) {
+	for _, item := range items {
+		<li>
+			@item
+		</li>
+	}
+}
+
+templ SongQueueEntry(id string, artist string, title string) {
+	<div class="bg-slate-500">
+		<button hx-post={ fmt.Sprintf("/songQueue/%s/swap/up", id) } hx-target="#song-queue">↑</button>
+		<button hx-post={ fmt.Sprintf("/songQueue/%s/swap/down", id) } hx-target="#song-queue">↓</button>
+		<button hx-delete={ fmt.Sprintf("/songQueue/%s", id) } hx-target="#song-queue">x</button>
+		<span>{ id } )</span>
+		<span>{ artist }</span>
+		<span>- </span>
+		<span>{ title }</span>
+	</div>
+}
+
+templ NotYetSongQueue() {
+	<body>
+		<h1>Not yet</h1>
+	</body>
+}
