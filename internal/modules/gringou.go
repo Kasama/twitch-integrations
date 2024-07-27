@@ -11,7 +11,7 @@ import (
 const rewardIDGringou = "3ae88181-a953-4935-b34c-ee5332b88d5d"
 const gringouDuration = 1 * time.Minute
 
-type GringouModule struct {}
+type GringouModule struct{}
 
 func NewGringouModule() *GringouModule {
 	return &GringouModule{}
@@ -26,6 +26,7 @@ func (m *GringouModule) handleReward(reward *twitch.EventChannelChannelPointsCus
 		return nil
 	}
 
+	events.Dispatch(NewPunishableRedeemInfo(reward.User.UserID, reward.User.UserName))
 	endTime := time.Now().Add(gringouDuration)
 
 	PlayMp3URL("https://www.myinstants.com/media/sounds/ding_2.mp3")

@@ -8,6 +8,7 @@ require (
 	github.com/andreykaipov/goobs v1.3.0
 	github.com/badu/bus v1.0.3
 	github.com/beeker1121/goque v2.1.0+incompatible
+	github.com/blang/mpv v0.0.0-20160810175505-d56d7352e068
 	github.com/faiface/beep v1.1.0
 	github.com/gempir/go-twitch-irc/v4 v4.0.0
 	github.com/google/uuid v1.3.0

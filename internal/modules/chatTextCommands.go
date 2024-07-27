@@ -8,40 +8,36 @@ import (
 )
 
 type CommandsModule struct {
-	channel          string
-	twitchChatClient *twitch.Client
 }
 
-func NewCommandsModule(channel string) *CommandsModule {
-	return &CommandsModule{
-		channel: channel,
-	}
+func NewCommandsModule() *CommandsModule {
+	return &CommandsModule{}
 }
 
 func (m *CommandsModule) Register() {
-	events.Register(m.handleTwitchClient)
 	events.Register(m.handleCommand)
 }
 
-func (m *CommandsModule) handleTwitchClient(client *twitch.Client) error {
-	m.twitchChatClient = client
-	return nil
-}
-
 func (m *CommandsModule) handleCommand(msg *twitch.PrivateMessage) error {
-	if m.twitchChatClient == nil || !strings.HasPrefix(msg.Message, "!") {
+	if !strings.HasPrefix(msg.Message, "!") {
 		return nil
 	}
 
 	response := ""
 
 	switch msg.Message {
+	case "!camp":
+		response = "Participe do campeonato Estrelas Nascentes https://start.gg/estrelasnascentes"
 	case "!7tv":
 		response = "https://7tv.app/"
+	case "!desgoza", "!desgozar":
+		response = msg.User.Name + " desgozou a calça do chat"
+	case "!besito":
+		response = "Uno besito para ti! 😘"
 	}
 
 	if response != "" {
-		m.twitchChatClient.Say(m.channel, response)
+		events.Dispatch(NewChatMessage(response))
 	}
 
 	return nil

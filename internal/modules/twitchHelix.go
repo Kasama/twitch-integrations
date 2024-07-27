@@ -23,12 +23,13 @@ func (m *TwitchHelixModule) handleAuth(auth *twitch.TwitchAuth) error {
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:        auth.TwitchConfig.ClientId,
 		ClientSecret:    auth.TwitchConfig.ClientSecret,
+		RefreshToken:    auth.RefreshToken,
 		UserAccessToken: auth.AccessToken,
 		UserAgent:       "kasama-twitch-integrations",
 	})
 
 	if err != nil {
-	  return err
+		return err
 	}
 
 	m.client = client

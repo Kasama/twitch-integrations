@@ -26,6 +26,7 @@ func (m *PortugouModule) handleReward(reward *twitch.EventChannelChannelPointsCu
 		return nil
 	}
 
+	events.Dispatch(NewPunishableRedeemInfo(reward.User.UserID, reward.User.UserName))
 	endTime := time.Now().Add(portugouDuration)
 
 	PlayMp3URL("https://www.myinstants.com/media/sounds/ding_2.mp3")

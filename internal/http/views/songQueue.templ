@@ -6,7 +6,44 @@ templ SongQueuePage(items []templ.Component) {
 	<body>
 		<a href="/">Back home</a>
 		<h1>Song Queue Manager</h1>
-		<ul id="song-queue">
+		<button
+			class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+			hx-swap="none"
+			hx-post="/songQueue/control/play"
+		>play/pause</button>
+		<button
+			class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+			hx-swap="none"
+			hx-post="/songQueue/control/next"
+		>next</button>
+		<form class="flex flex-row max-w-md my-10" hx-swap="none" hx-post="/songQueue/control/enqueue">
+			<input
+				class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+				_="on htmx:afterSend put '' into #url.value"
+				type="text"
+				name="url"
+				id="url"
+			/>
+			<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">
+				Enqueue
+			</button>
+		</form>
+    <h2>Quick access songs</h2>
+		<button
+			_="on click put '' into #url.value"
+			class="bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+			type="submit"
+		>
+			Clear
+		</button>
+		<button
+			_="on click put 'https://www.youtube.com/watch?v=iW-8h-iRFME' into #url.value"
+			class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+			type="submit"
+		>
+			Hino
+		</button>
+		<ul sse-swap="song_queue" hx-swap="innerHTML" id="song-queue">
 			@SongQueue(items)
 		</ul>
 	</body>
@@ -20,7 +57,7 @@ templ SongQueue(items []templ.Component) {
 	}
 }
 
-templ SongQueueEntry(id string, artist string, title string) {
+templ SongQueueEntry(id string, artist string, title string, originalQuery string) {
 	<div class="bg-slate-500">
 		<button hx-post={ fmt.Sprintf("/songQueue/%s/swap/up", id) } hx-target="#song-queue">↑</button>
 		<button hx-post={ fmt.Sprintf("/songQueue/%s/swap/down", id) } hx-target="#song-queue">↓</button>
@@ -29,6 +66,7 @@ templ SongQueueEntry(id string, artist string, title string) {
 		<span>{ artist }</span>
 		<span>- </span>
 		<span>{ title }</span>
+		<button _={ fmt.Sprintf("on click put '%s' into #url.value", originalQuery) }>⭐</button>
 	</div>
 }
 

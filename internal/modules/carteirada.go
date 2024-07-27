@@ -9,32 +9,21 @@ import (
 )
 
 type CarteiradaModule struct {
-	twitchChatClient *twitch.Client
 	channel          string
 }
 
 func NewCarteiradaModule(channel string) *CarteiradaModule {
 	return &CarteiradaModule{
 		channel:          channel,
-		twitchChatClient: nil,
 	}
 }
 
 // Register implements events.EventHandler.
 func (m *CarteiradaModule) Register() {
 	events.Register(m.handleCommand)
-	events.Register(m.handleTwitchClient)
-}
-
-func (m *CarteiradaModule) handleTwitchClient(client *twitch.Client) error {
-	m.twitchChatClient = client
-	return nil
 }
 
 func (m *CarteiradaModule) handleCommand(msg *twitch.PrivateMessage) error {
-	if m.twitchChatClient == nil {
-		return nil
-	}
 	if !strings.Contains(strings.TrimSpace(msg.Message), "!carteirada") {
 		return nil
 	}
@@ -51,7 +40,7 @@ func (m *CarteiradaModule) handleCommand(msg *twitch.PrivateMessage) error {
 		}
 	}
 
-	m.twitchChatClient.Say(m.channel, fmt.Sprintf("Ah é? Mas quantos títulos vc tem? @%s", target))
+	events.Dispatch(NewChatMessage(fmt.Sprintf("Ah é? Mas quantos títulos vc tem? @%s", target)))
 
 	return nil
 }

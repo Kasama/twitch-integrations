@@ -10,9 +10,7 @@ import (
 )
 
 type YappingModule struct {
-	yapCount     map[string]int
-	channel      string
-	twitchClient *twitch.Client
+	yapCount map[string]int
 }
 
 // Register implements events.EventHandler.
@@ -21,11 +19,9 @@ func (m *YappingModule) Register() {
 	events.Register(m.handlePrivateMessage)
 }
 
-func NewYappingModule(channel string) *YappingModule {
+func NewYappingModule() *YappingModule {
 	return &YappingModule{
-		yapCount:     make(map[string]int, 0),
-		channel:      channel,
-		twitchClient: nil,
+		yapCount: make(map[string]int, 0),
 	}
 }
 
@@ -35,21 +31,17 @@ func treatUserName(user string) string {
 
 func (m *YappingModule) handleTwitchClient(client *twitch.Client) error {
 	logger.Debug("YappingModule: Twitch client initialized with client")
-	m.twitchClient = client
 	return nil
 }
 
 func (m *YappingModule) handlePrivateMessage(message *twitch.PrivateMessage) error {
-	if m.twitchClient == nil {
-		return fmt.Errorf("twitch client not initialized, but got message event")
-	}
 	author := treatUserName(message.User.DisplayName)
 	m.yapCount[author] = m.yapCount[author] + 1
 
 	fields := strings.Fields(message.Message)
 	if fields[0] == "!fala" {
 		if len(fields) < 2 {
-			m.twitchClient.Say(m.channel, "Uso: !fala @<usuário>. Mostra quantas vezes o usuário falou no chat hoje")
+			events.Dispatch(NewChatMessage("Uso: !fala @<usuário>. Mostra quantas vezes o usuário falou no chat hoje"))
 			return nil
 		}
 		user := treatUserName(fields[1])
@@ -64,7 +56,7 @@ func (m *YappingModule) handlePrivateMessage(message *twitch.PrivateMessage) err
 			message = fmt.Sprintf("%s não para quieto, já foram %d bostas hoje itskas19Yapping", user, count)
 		}
 
-		m.twitchClient.Say(m.channel, message)
+		events.Dispatch(NewChatMessage(message))
 	}
 	return nil
 }

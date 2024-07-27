@@ -23,7 +23,6 @@ var ThemeNotFound = errors.New("Theme not found")
 
 type UserThemeModule struct {
 	db              *db.Database
-	client          *twitch.Client
 	helix           *helix.Client
 	messagedAlready map[string]struct{}
 	channel         string
@@ -37,7 +36,6 @@ func NewUserThemeModule(channel string) *UserThemeModule {
 
 	module := &UserThemeModule{
 		db:              db,
-		client:          &twitch.Client{},
 		messagedAlready: make(map[string]struct{}),
 		channel:         channel,
 	}
@@ -198,7 +196,6 @@ func (m *UserThemeModule) getTheme(userID string) (string, error) {
 
 // Register implements events.EventHandler.
 func (m *UserThemeModule) Register() {
-	events.Register(m.handleTwitchClient)
 	events.Register(m.handleHelixTwitchClient)
 
 	events.Register(m.handleTheme)
@@ -212,11 +209,6 @@ func IsSubscriber(user *twitch.User) bool {
 	_, sub := user.Badges["subscriber"]
 	_, founder := user.Badges["founder"]
 	return sub || founder
-}
-
-func (m *UserThemeModule) handleTwitchClient(client *twitch.Client) error {
-	m.client = client
-	return nil
 }
 
 func (m *UserThemeModule) handleHelixTwitchClient(client *helix.Client) error {
@@ -317,9 +309,7 @@ func getThemeFromUrl(rawurl string) (string, error) {
 
 func (m *UserThemeModule) handleChangeTheme(message *twitch.PrivateMessage) error {
 	printThemeUsage := func() {
-		if m.client != nil {
-			m.client.Say(m.channel, "Uso para subs/vips: !tema <url>. A URL deve ser um link de um .mp3 ou um link do www.myinstants.com (max 10s)")
-		}
+		events.Dispatch(NewChatMessage("Uso para subs/vips: !tema <url>. A URL deve ser um link de um .mp3 ou um link do www.myinstants.com (max 10s)"))
 	}
 
 	if message.Message == "!tema" {

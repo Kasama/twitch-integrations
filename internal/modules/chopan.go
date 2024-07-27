@@ -14,6 +14,7 @@ import (
 )
 
 const pharseDir = "/home/roberto/documents/programming/Twitch/kasama-twitch-integrations/assets/chopan-phrases/"
+const currentPhrase = "/tmp/currentChopanPhrase"
 const chopanRewardID = "b76fe0e6-48c4-40cf-91e6-990cad1f7217"
 
 type ChopanModule struct {
@@ -21,8 +22,18 @@ type ChopanModule struct {
 }
 
 func NewChopanModule() *ChopanModule {
+	imageBlob := ""
+	_, err := os.Stat(currentPhrase)
+	if err == nil {
+		phraseBlob, err := os.ReadFile(currentPhrase)
+		if err == nil {
+			base64blob := base64.StdEncoding.EncodeToString(phraseBlob)
+			imageBlob = "data:image/webp;base64," + base64blob
+		}
+	}
+
 	return &ChopanModule{
-		imageBlob: "",
+		imageBlob: imageBlob,
 	}
 }
 
@@ -49,21 +60,27 @@ func (m *ChopanModule) resetPhrase() (string, error) {
 	}
 
 	base64blob := base64.StdEncoding.EncodeToString(phraseBlob)
+	_ = os.WriteFile(currentPhrase, phraseBlob, 0644)
 
 	return "data:image/webp;base64," + base64blob, nil
 }
 
 func (m *ChopanModule) handleResetPhrase(msg *twitch.PrivateMessage) error {
-	if msg.User.Badges["broadcaster"] != 1 || msg.Message != "!reset-phrase" {
+	if msg.User.Badges["broadcaster"] != 1 || (msg.Message != "!reset-phrase" && msg.Message != "!chopan") {
 		return nil
 	}
 
-	imageBlob, err := m.resetPhrase()
-	m.imageBlob = imageBlob
+	if msg.Message != "!chopan" {
+		imageBlob, err := m.resetPhrase()
+		if err != nil {
+			return err
+		}
+		m.imageBlob = imageBlob
+	}
 
 	events.Dispatch(NewWebEvent("chopan_phrase", views.RenderToString(views.ChopanPhrase(m.imageBlob))))
 
-	return err
+	return nil
 }
 
 func (m *ChopanModule) handleStartStream(e *obsEvents.StreamStateChanged) error {

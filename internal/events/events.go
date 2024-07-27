@@ -23,6 +23,16 @@ func Register[T any](callback func(event T) error) {
 	})
 }
 
+func RegisterOnce[T any](callback func(event T) error) {
+	bus.SubCancel(func(event T) bool {
+		err := callback(event)
+		if err != nil {
+			logger.Errorf("Error processing event '%T': %s\n", event, err.Error())
+		}
+		return true
+	})
+}
+
 type EventHandler interface {
 	Register()
 }

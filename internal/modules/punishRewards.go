@@ -14,14 +14,16 @@ const punishDuration = 5 * time.Minute
 const punishThreshold = -5 * time.Minute
 
 type PunishableRedeemInfo struct {
-	target string
-	time   time.Time
+	target     string
+	prettyName string
+	time       time.Time
 }
 
-func NewPunishableRedeemInfo(target string) *PunishableRedeemInfo {
+func NewPunishableRedeemInfo(target string, prettyName string) *PunishableRedeemInfo {
 	return &PunishableRedeemInfo{
-		target: target,
-		time:   time.Now(),
+		target:     target,
+		prettyName: prettyName,
+		time:       time.Now(),
 	}
 }
 

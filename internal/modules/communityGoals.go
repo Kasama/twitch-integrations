@@ -21,18 +21,14 @@ type CommunityGoalsModule struct {
 	currentGoalCommands      int
 	currentGoalBeneficiaries map[string]*twitch.User
 	db                       *db.Database
-	twitchClient             *twitch.Client
-	channel                  string
 }
 
-func NewCommunityGoalsModule(channel string) *CommunityGoalsModule {
+func NewCommunityGoalsModule() *CommunityGoalsModule {
 	return &CommunityGoalsModule{
 		showingCoinUntil:         time.Unix(0, 0),
 		currentGoalCommands:      0,
 		currentGoalBeneficiaries: make(map[string]*twitch.User),
 		db:                       &db.Database{},
-		twitchClient:             nil,
-		channel:                  channel,
 	}
 }
 
@@ -183,7 +179,6 @@ func (m *CommunityGoalsModule) Register() {
 	events.Register(m.handleCommand)
 	events.Register(m.handleTicker)
 	events.Register(m.handleCaptureEvent)
-	events.Register(m.handleTwitchClient)
 	events.Register(m.handleHelp)
 }
 
@@ -193,11 +188,6 @@ func clearCoin() {
 
 func showCoin(x, y int) {
 	events.Dispatch(NewWebEvent(coin_web_event_name, views.RenderToString(views.CommunityCoin(x, y))))
-}
-
-func (m *CommunityGoalsModule) handleTwitchClient(client *twitch.Client) error {
-	m.twitchClient = client
-	return nil
 }
 
 func (m *CommunityGoalsModule) handleTicker(t *time.Time) error {
@@ -256,12 +246,7 @@ func (m *CommunityGoalsModule) handleHelp(msg *twitch.PrivateMessage) error {
 
 	text := fmt.Sprintf("O objetivo atual é: %s. Atualmente temos %d/%d pontos necessários. Use !coletar na hora certa para contribuir", currentGoal, goalPoints, neededGoalPoints)
 
-	if m.twitchClient != nil {
-		logger.Debugf("id: %s, Got client: %v", m.channel, m.twitchClient)
-		m.twitchClient.Say(m.channel, text)
-	} else {
-		logger.Debugf("Twitch client was nil, but was gonna say: '%s'", text)
-	}
+	events.Dispatch(NewChatMessage(text))
 
 	return nil
 }

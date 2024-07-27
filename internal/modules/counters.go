@@ -27,24 +27,18 @@ func intoCounterName(name string) (CounterName, error) {
 
 type CountersModule struct {
 	db               *db.Database
-	twitchChatClient *twitch.Client
 	channel          string
 }
 
 func NewCountersModule(channel string) *CountersModule {
 	return &CountersModule{
 		db:               nil,
-		twitchChatClient: nil,
 		channel:          channel,
 	}
 }
 
 func (m *CountersModule) sendTwitchChatMessage(message string) {
-	if m.twitchChatClient == nil {
-		return
-	}
-
-	m.twitchChatClient.Say(m.channel, message)
+	events.Dispatch(NewChatMessage(message))
 }
 
 func (m *CountersModule) setupDatabase() error {
@@ -97,13 +91,7 @@ func (m *CountersModule) Register() {
 
 	events.Register(m.handleKasamadaEvent)
 	events.Register(m.handleKasamadaMessage)
-	events.Register(m.handleTwitchChatClient)
 	events.Register(m.handleCommand)
-}
-
-func (m *CountersModule) handleTwitchChatClient(client *twitch.Client) error {
-	m.twitchChatClient = client
-	return nil
 }
 
 func (m *CountersModule) handleCommand(msg *twitch.PrivateMessage) error {
@@ -120,7 +108,7 @@ func (m *CountersModule) handleCommand(msg *twitch.PrivateMessage) error {
 		return err
 	}
 
-	m.sendTwitchChatMessage(fmt.Sprintf("%s: %d", counter, count))
+	events.Dispatch(NewChatMessage(fmt.Sprintf("%s: %d", counter, count)))
 
 	return nil
 }

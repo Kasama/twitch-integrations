@@ -56,6 +56,7 @@ func (m *CalabocaModule) handleReward(reward *twitch.EventChannelChannelPointsCu
 	if reward.Reward.ID != rewardIDMuteMe {
 		return nil
 	}
+	events.Dispatch(NewPunishableRedeemInfo(reward.User.UserID, reward.User.UserName))
 	events.Dispatch(&EventMuteMe{Duration: 30 * time.Second, User: reward.User.UserName})
 
 	if m.helix != nil {

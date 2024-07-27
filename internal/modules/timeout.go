@@ -17,6 +17,11 @@ const rewardIdForceTimeoutMalboro = "22702c49-f9b3-4f2c-b7a3-649aa8540043"
 const rewardIdUnTimeoutMalboro = "c92a4c7e-6eca-4566-b4d9-254cd383a986"
 const malboroID = "821524016"
 
+var peopleTimeout = map[string]string{
+	"84188084-9253-4048-9b3a-e63338f9425f": "508517902", // Riceshower
+	"c9d68a42-9c92-4df6-877f-cb0dd1993aaf": "201964496", // Stitch
+}
+
 const timeoutMethod = "ban"
 
 type TimeoutModule struct {
@@ -103,7 +108,8 @@ func (m *TimeoutModule) handleUnTimeoutMalboroReward(reward *twitchEventSub.Even
 }
 
 func (m *TimeoutModule) handleTimeoutReward(reward *twitchEventSub.EventChannelChannelPointsCustomRewardRedemptionAdd) error {
-	if reward.Reward.ID != rewardIDTimeout && reward.Reward.ID != rewardIdTimeoutMalboro && reward.Reward.ID != rewardIdForceTimeoutMalboro {
+	personToTimeoutID, rewardIsPersonTimeout := peopleTimeout[reward.Reward.ID]
+	if reward.Reward.ID != rewardIDTimeout && reward.Reward.ID != rewardIdTimeoutMalboro && reward.Reward.ID != rewardIdForceTimeoutMalboro && !rewardIsPersonTimeout {
 		return nil
 	}
 
@@ -128,6 +134,10 @@ func (m *TimeoutModule) handleTimeoutReward(reward *twitchEventSub.EventChannelC
 		}
 		duration = 60
 		user = malboroID
+	}
+	if rewardIsPersonTimeout {
+		duration = 60
+		user = personToTimeoutID
 	}
 
 	err := m.timeoutUser(user, duration, "timeout dos pontinhos")

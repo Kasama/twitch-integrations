@@ -25,12 +25,15 @@ const (
 	PRIORITY_HIGH   uint8 = 3
 )
 
-// const spotifyQueueName = "spotify_queue"
-const spotifyQueueName = "spotify_queue_test"
+const spotifyQueueName = "spotify_queue"
+
+// const spotifyQueueName = "spotify_queue_test"
 
 const songRequestRewardID = "35401b62-32aa-4009-ac1e-a5f3015670e8"
 const songRequestPriorityRewardID = "ee3b013d-619b-45d8-8745-71c33bf71e6b"
 const skipSongRewardID = "b062e370-6a64-4537-b513-f83bd1588496"
+
+var requestedSongs = make(map[string]int)
 
 const (
 	SongQueueItemTypeSpotify = "spotify"
@@ -38,29 +41,29 @@ const (
 )
 
 type SongQueueItem struct {
-	Type  string            `json:"type"`
-	Track spotify.FullTrack `json:"track"`
-	User  string            `json:"user"`
+	Type          string            `json:"type"`
+	Track         spotify.FullTrack `json:"track"`
+	User          string            `json:"user"`
+	OriginalQuery string            `json:"original_query"`
 }
 
 type playingState struct {
-	nowPlaying   *SongQueueItem
-	lastDequeued *SongQueueItem
-	locked       atomic.Bool
+	nowPlaying     *SongQueueItem
+	lastDequeued   *SongQueueItem
+	lastEnqueuedAt time.Time
+	locked         atomic.Bool
 }
 
 type SpotifyModule struct {
-	ctx              context.Context
-	client           *spotify.Client
-	twitchChatClient *twitch.Client
-	twitchChannel    string
-	queue            *db.Queue[SongQueueItem]
-	playingState     playingState
+	ctx           context.Context
+	client        *spotify.Client
+	twitchChannel string
+	queue         *db.Queue[SongQueueItem]
+	playingState  playingState
 }
 
 func (m *SpotifyModule) Register() {
 	events.Register(m.handleSpotifyClient)
-	events.Register(m.handleTwtichChatClient)
 	events.Register(m.handlePlayMessage)
 	events.Register(m.handlePauseMessage)
 	events.Register(m.handleSongRequestReward)
@@ -86,20 +89,16 @@ func NewSpotifyModule(ctx context.Context, twitchUsername string) *SpotifyModule
 		twitchChannel: twitchUsername,
 		queue:         q,
 		playingState: playingState{
-			nowPlaying:   &SongQueueItem{},
-			lastDequeued: nil,
-			locked:       atomic.Bool{}, // default is false
+			nowPlaying:     &SongQueueItem{},
+			lastDequeued:   nil,
+			lastEnqueuedAt: time.UnixMicro(0),
+			locked:         atomic.Bool{}, // default is false
 		},
 	}
 }
 
 func (m *SpotifyModule) Queue() *db.Queue[SongQueueItem] {
 	return m.queue
-}
-
-func (m *SpotifyModule) handleTwtichChatClient(client *twitch.Client) error {
-	m.twitchChatClient = client
-	return nil
 }
 
 func (m *SpotifyModule) handleSpotifyClient(client *spotify.Client) error {
@@ -116,9 +115,7 @@ func (m *SpotifyModule) handleSongRequestReward(reward *twitchEventSub.EventChan
 	}
 
 	chatMessage := func(msg string) {
-		if m.twitchChatClient != nil {
-			m.twitchChatClient.Say(m.twitchChannel, msg)
-		}
+		events.Dispatch(NewChatMessage(msg))
 	}
 	notFoundMessage := func() {
 		chatMessage("Musica não encontrada")
@@ -128,7 +125,7 @@ func (m *SpotifyModule) handleSongRequestReward(reward *twitchEventSub.EventChan
 	var trackID string
 
 	if strings.Contains(query, "open.spotify.com") {
-		// https: //open.spotify.com/track/0a7BloCiNzLDD9qSQHh5m7?si=c73c611b98a142ad
+		// https://open.spotify.com/track/0a7BloCiNzLDD9qSQHh5m7?si=c73c611b98a142ad
 		u, err := url.Parse(strings.TrimSpace(query))
 		if err != nil {
 			notFoundMessage()
@@ -196,6 +193,18 @@ func (m *SpotifyModule) handleSongRequestReward(reward *twitchEventSub.EventChan
 		return nil
 	}
 
+	value, exists := requestedSongs[trackID]
+	if !exists {
+		requestedSongs[trackID] = 1
+	} else {
+		requestedSongs[trackID] = value + 1
+	}
+
+	if requestedSongs[trackID] > 2 {
+		chatMessage("Musica já foi pedida 2 vezes hoje")
+		return nil
+	}
+
 	track, _ := m.client.GetTrack(m.ctx, spotify.ID(trackID))
 	if track != nil {
 		priority := PRIORITY_NORMAL
@@ -203,16 +212,15 @@ func (m *SpotifyModule) handleSongRequestReward(reward *twitchEventSub.EventChan
 			priority = PRIORITY_HIGH
 		}
 		m.queue.Push(priority, SongQueueItem{
-			Type:  SongQueueItemTypeSpotify,
-			Track: *track,
-			User:  reward.UserName,
+			Type:          SongQueueItemTypeSpotify,
+			Track:         *track,
+			User:          reward.UserName,
+			OriginalQuery: query,
 		})
 
 		// _ = m.client.QueueSong(m.ctx, track.ID)
 
-		if m.twitchChatClient != nil {
-			m.twitchChatClient.Say(m.twitchChannel, fmt.Sprintf("Adicionado \"%s - %s\" na fila. %d músicas na fila.", track.Artists[0].Name, track.Name, m.queue.Len()))
-		}
+		events.Dispatch(NewChatMessage(fmt.Sprintf("Adicionado \"%s - %s\" na fila. %d músicas na fila.", track.Artists[0].Name, track.Name, m.queue.Len())))
 	}
 
 	return nil
@@ -228,19 +236,17 @@ func (m *SpotifyModule) handleMusicInfo(msg *twitch.PrivateMessage) error {
 			return err
 		}
 		if !currentlyPlaying.Playing {
-			m.twitchChatClient.Say(m.twitchChannel, "Nenhuma musica tocando no momento")
+			events.Dispatch(NewChatMessage("Nenhuma musica tocando no momento"))
 			return nil
 		}
-		if m.twitchChatClient != nil {
-			next := m.queue.Peek()
-			nextText := ""
-			if next != nil {
-				nextText = fmt.Sprintf(" Proxima: '%s - %s'", next.Track.Artists[0].Name, next.Track.Name)
-			}
-			queuedTracks := m.queue.Len()
-			logger.Debugf("Currently playing: '%s'. %d tracks in queue", currentlyPlaying.Item, queuedTracks)
-			m.twitchChatClient.Say(m.twitchChannel, fmt.Sprintf("Tocando: '%s - %s'. Temos mais %d na fila.%s", currentlyPlaying.Item.Artists[0].Name, currentlyPlaying.Item.Name, queuedTracks, nextText))
+		next := m.queue.Peek()
+		nextText := ""
+		if next != nil {
+			nextText = fmt.Sprintf(" Proxima: '%s - %s'", next.Track.Artists[0].Name, next.Track.Name)
 		}
+		queuedTracks := m.queue.Len()
+		logger.Debugf("Currently playing: '%s'. %d tracks in queue", currentlyPlaying.Item, queuedTracks)
+		events.Dispatch(NewChatMessage(fmt.Sprintf("Tocando: '%s - %s'. Temos mais %d na fila.%s", currentlyPlaying.Item.Artists[0].Name, currentlyPlaying.Item.Name, queuedTracks, nextText)))
 	}
 	return nil
 }
@@ -269,6 +275,12 @@ func (m *SpotifyModule) enqueueNext() error {
 	if m.queue.Len() == 0 {
 		return nil
 	}
+
+	if m.playingState.lastEnqueuedAt.After(time.Now().Add(-30 * time.Second)) {
+		return nil
+	}
+
+	m.playingState.lastEnqueuedAt = time.Now()
 
 	spotifyQueue, err := m.client.GetQueue(m.ctx)
 	if err != nil || len(spotifyQueue.Items) < 1 {
@@ -350,15 +362,11 @@ func (m *SpotifyModule) handlePlayMessage(msg *twitch.PrivateMessage) error {
 
 	if resp.Tracks.Total <= 0 {
 		logger.Debugf("SpotifyModule: no tracks found")
-		if m.twitchChatClient != nil {
-			m.twitchChatClient.Say(m.twitchChannel, "Musica não encontrada")
-		}
+		events.Dispatch(NewChatMessage("Musica não encontrada"))
 	} else {
 		track := resp.Tracks.Tracks[0]
 		_ = m.client.QueueSong(m.ctx, track.ID)
-		if m.twitchChatClient != nil {
-			m.twitchChatClient.Say(m.twitchChannel, fmt.Sprintf("Adicionado %s - %s na fila", track.Artists[0].Name, track.Name))
-		}
+		events.Dispatch(NewChatMessage(fmt.Sprintf("Adicionado %s - %s na fila", track.Artists[0].Name, track.Name)))
 	}
 
 	logger.Debugf("SpotifyModule: received play command")

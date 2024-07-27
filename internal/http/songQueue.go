@@ -6,8 +6,10 @@ import (
 	"strconv"
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/db"
+	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/http/views"
 	"github.com/Kasama/kasama-twitch-integrations/internal/modules"
+	mediaplayer "github.com/Kasama/kasama-twitch-integrations/internal/modules/mediaPlayer"
 	"github.com/a-h/templ"
 	"github.com/beeker1121/goque"
 	"github.com/labstack/echo/v4"
@@ -21,6 +23,7 @@ func (h *SongQueueHandler) RegisterRoutes(e *echo.Group) {
 	e.GET("", h.handleQueue)
 	e.GET("/", h.handleQueue)
 	e.DELETE("/:id", h.handleDeleteItem)
+	e.POST("/control/:action", h.handlePlayerAction)
 	e.POST("/:id/swap/:direction", h.handleSwapItem)
 }
 
@@ -28,6 +31,21 @@ func NewSongQueueHandler(queue *db.Queue[modules.SongQueueItem]) *SongQueueHandl
 	return &SongQueueHandler{
 		queue: queue,
 	}
+}
+
+func (h *SongQueueHandler) handlePlayerAction(c echo.Context) error {
+	action := c.Param("action")
+	switch action {
+	case "play":
+		events.Dispatch(mediaplayer.PlayEvent())
+	case "next":
+		events.Dispatch(mediaplayer.NextEvent())
+	case "enqueue":
+		url := c.FormValue("url")
+		events.Dispatch(mediaplayer.EnqueueEvent(url, "Kasama"))
+	}
+
+	return nil
 }
 
 func (h *SongQueueHandler) handleSwapItem(c echo.Context) error {
@@ -102,7 +120,7 @@ func (h *SongQueueHandler) QueueEntries() []templ.Component {
 	items := h.queue.Items()
 	is := make([]templ.Component, 0, len(items))
 	for i, item := range items {
-		is = append(is, views.SongQueueEntry(fmt.Sprintf("%d", i), item.Track.Artists[0].Name, item.Track.Name))
+		is = append(is, views.SongQueueEntry(fmt.Sprintf("%d", i), item.Track.Artists[0].Name, item.Track.Name, item.OriginalQuery))
 	}
 	return is
 }
