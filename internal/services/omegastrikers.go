@@ -2,20 +2,18 @@ package services
 
 import (
 	"context"
+	"io"
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
 	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
+	"github.com/Kasama/kasama-twitch-integrations/internal/omegastrikers"
 	"github.com/hpcloud/tail"
 )
 
-const OSLogPath = "~/.local/share/Steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log"
+const OSLogPath = "/home/roberto/.local/share/Steam/steamapps/compatdata/1869590/pfx/drive_c/users/steamuser/AppData/Local/OmegaStrikers/Saved/Logs/OmegaStrikers.log"
 
 type OmegaStrikersService struct {
 	ctx context.Context
-}
-
-type OmegaStrikersLogEvent struct {
-	RawLine string
 }
 
 func NewOmegaStrikersService(ctx context.Context) *OmegaStrikersService {
@@ -25,6 +23,7 @@ func NewOmegaStrikersService(ctx context.Context) *OmegaStrikersService {
 }
 
 func (s *OmegaStrikersService) Register() {
+	logger.Debugf("Registering OmegaStrikersService")
 	go func() {
 		t, err := tail.TailFile(OSLogPath, tail.Config{
 			ReOpen:      true,
@@ -32,52 +31,32 @@ func (s *OmegaStrikersService) Register() {
 			Follow:      true,
 			MaxLineSize: 0,
 			Logger:      tail.DefaultLogger,
+			Location:    &tail.SeekInfo{
+				Offset: 0,
+				Whence: io.SeekEnd,
+			},
 		})
 		if err != nil {
 			logger.Errorf("Failed to tail OmegaStrikers log: %s", err)
 			return
 		}
 
-		for line := range t.Lines {
-				if line == nil || line.Err != nil {
-					err := ""
-					if line == nil {
-						err = "no line given"
-					} else {
-						err = line.Err.Error()
-					}
-					logger.Errorf("Error reading OmegaStrikers log: %s", err)
-					continue
-				}
-				parseOmegaStrikersLog(line.Text)
-		}
-
-		return
 		for {
 			select {
 			case <-s.ctx.Done():
 				return
 			case line := <-t.Lines:
 				if line == nil || line.Err != nil {
-					err := ""
-					if line == nil {
-						err = "no line given"
-					} else {
-						err = line.Err.Error()
-					}
-					logger.Errorf("Error reading OmegaStrikers log: %s", err)
 					continue
 				}
-				parseOmegaStrikersLog(line.Text)
+				event, err := omegastrikers.ParseOmegaStrikersLog(line.Text)
+				if err != nil {
+					continue
+				}
+				events.Dispatch(event)
 			}
 		}
 	}()
-}
-
-func parseOmegaStrikersLog(line string) *OmegaStrikersLogEvent {
-	return &OmegaStrikersLogEvent{
-		RawLine: line,
-	}
 }
 
 var _ events.EventHandler = &OmegaStrikersService{}

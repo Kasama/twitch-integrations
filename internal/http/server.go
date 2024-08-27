@@ -33,6 +33,7 @@ type Handlers struct {
 	twitchAuth    *twitch.TwitchAuth
 	spotifyAuth   *spotify.SpotifyAuth
 	webEvents     *modules.WebEventsModule
+	championship  *ChampionshipControlHandler
 }
 
 type State struct {
@@ -53,6 +54,7 @@ func NewHandlers(env string, twitchConfig *twitch.TwitchConfig, spotifyConfig *s
 		spotifyConfig: spotifyConfig,
 		songQueue:     queue,
 		webEvents:     webEvents,
+		championship:  NewChampionshipControlHandler(),
 	}
 }
 
@@ -126,13 +128,22 @@ func (h *Handlers) RegisterRoutes() {
 	songQueueHandler := NewSongQueueHandler(h.songQueue)
 
 	// API routes
-	h.server.GET("/api/livez", func(c echo.Context) error { return c.NoContent(http.StatusNoContent) })
+	h.server.GET("/api/test", func(c echo.Context) error {
+		logger.Debug("things")
+		return c.NoContent(http.StatusNoContent)
+	})
+	h.server.GET("/api/livez", func(c echo.Context) error {
+		c.Set("skip-log", true)
+		return c.NoContent(http.StatusNoContent)
+	})
 	h.server.GET("/api/sse", h.webEvents.HandleSSE)
 	h.server.GET("/api/keypad-event/:id", HandleMacropad)
 	h.server.GET("/ws/dev/hot-reload", handleWSHotReload)
 
 	// Web UI routes
 	h.server.Static("/assets", "assets")
+	h.server.Static("/awakening", "/Files/Images/Omega Strikers/Omega Strikers Media Assets/Gear and Awakenings/")
+	h.server.Static("/campAssets", "/Files/ownCloud/Omega Strikers/Estrelas Nascentes/")
 	h.server.GET("/", HandleIndex)
 	h.server.GET("/auth/twitch", twitchHandler.handleAuth)
 	h.server.GET("/auth/twitch/redirect", twitchHandler.handleRedirect)
@@ -143,8 +154,11 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.GET("/sse", HandleSSEUI)
 	h.server.GET("/obsOverlay", HandleSSEUI)
 
-	group := h.server.Group("/songQueue")
-	songQueueHandler.RegisterRoutes(group)
+	championshipGroup := h.server.Group("/championship")
+	h.championship.RegisterRoutes(championshipGroup)
+
+	songQueueGroup := h.server.Group("/songQueue")
+	songQueueHandler.RegisterRoutes(songQueueGroup)
 
 	h.server.Logger.Debug("Routes registered")
 	h.server.Logger.Info(h.server.Routes())
@@ -158,7 +172,8 @@ func getLoggerMiddleware(logger logger.Logger) echo.MiddlewareFunc {
 		LogStatus:   true,
 		LogError:    true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			if c.Path() == "/api/livez" {
+			skipLog := c.Get("skip-log")
+			if skipLog != nil {
 				return nil
 			}
 			logger.

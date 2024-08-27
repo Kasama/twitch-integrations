@@ -16,7 +16,7 @@ templ SongQueuePage(items []templ.Component) {
 			hx-swap="none"
 			hx-post="/songQueue/control/next"
 		>next</button>
-		<form class="flex flex-row max-w-md my-10" hx-swap="none" hx-post="/songQueue/control/enqueue">
+		<form class="flex flex-row max-w-lg my-10" hx-swap="none" hx-post="/songQueue/control/enqueue">
 			<input
 				class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 				_="on htmx:afterSend put '' into #url.value"
@@ -24,11 +24,23 @@ templ SongQueuePage(items []templ.Component) {
 				name="url"
 				id="url"
 			/>
-			<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">
-				Enqueue
+			<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-80" type="submit">
+				Enqueue for MPV
 			</button>
 		</form>
-    <h2>Quick access songs</h2>
+		<form class="flex flex-row max-w-lg my-10" hx-swap="none" hx-post="/songQueue/queue/enqueue">
+			<input
+				class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+				_="on htmx:afterSend put '' into #val.value"
+				type="text"
+				name="value"
+				id="val"
+			/>
+			<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-80" type="submit">
+				Add to queue
+			</button>
+		</form>
+		<h2>Quick access songs</h2>
 		<button
 			_="on click put '' into #url.value"
 			class="bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -43,7 +55,7 @@ templ SongQueuePage(items []templ.Component) {
 		>
 			Hino
 		</button>
-		<ul sse-swap="song_queue" hx-swap="innerHTML" id="song-queue">
+		<ul sse-swap="song_queue" hx-swap="innerHTML" id="song-queue" hx-get="/songQueue/queue" hx-trigger="every 1s">
 			@SongQueue(items)
 		</ul>
 	</body>

@@ -195,6 +195,11 @@ func (m *CommunityGoalsModule) handleTicker(t *time.Time) error {
 	if n != 0 || time.Now().Before(m.showingCoinUntil) {
 		return nil
 	}
+	_, _, err := m.getActiveGoal()
+	if err != nil {
+		// there is no active goal, ignore it
+		return nil
+	}
 
 	m.currentGoalCommands = 0
 	m.currentGoalBeneficiaries = map[string]*twitch.User{}
@@ -236,6 +241,7 @@ func (m *CommunityGoalsModule) handleHelp(msg *twitch.PrivateMessage) error {
 
 	currentGoal, neededGoalPoints, err := m.getActiveGoal()
 	if err != nil {
+		events.Dispatch(NewChatMessage("Não há um objetivo atual ativo no momento. Mande uma sugestão!"))
 		return err
 	}
 

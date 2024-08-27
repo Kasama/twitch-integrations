@@ -131,7 +131,6 @@ func (q *Queue[V]) Items() []V {
 			logger.Errorf("Failed to do something with queue: %v", err)
 		}
 		value := q.presentValue(newItem.Value)
-		logger.Debugf("Value: %v", value)
 		items = append(items, *value)
 
 		i++

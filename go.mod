@@ -5,6 +5,7 @@ go 1.22.2
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/a-h/templ v0.2.680
+	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/andreykaipov/goobs v1.3.0
 	github.com/badu/bus v1.0.3
 	github.com/beeker1121/goque v2.1.0+incompatible

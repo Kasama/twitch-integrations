@@ -1,0 +1,58 @@
+package views
+
+import (
+	"fmt"
+	"github.com/Kasama/kasama-twitch-integrations/internal/http/championship"
+)
+
+templ ChampionshipOverlay() {
+	<body>
+		<style type="text/css">
+  </style>
+		<div hx-ext="sse" sse-connect="/api/sse">
+			<div sse-swap="current_awakenings" hx-swap="innerHTML"></div>
+			<div sse-swap="current_match" hx-swap="innerHTML"></div>
+		</div>
+	</body>
+}
+
+templ RenderAwakenings(awakenings []string) {
+	<div class={ "absolute" , absolutePos(35, 18) }>
+		<div class="flex flex-row">
+			if len(awakenings) > 0 {
+				<div class="flex flex-col self-center">
+					<span class={ "text-white" , anotherTextShadow(), fontSize(2.5) }>Treinos</span>
+					<span class={ "text-white" , anotherTextShadow(), fontSize(2.5) }>Iniciais:</span>
+				</div>
+			}
+			for _, awakening := range awakenings {
+				<img class="w-40" src={ fmt.Sprintf("/awakening/%s", awakening) }/>
+			}
+		</div>
+	</div>
+}
+
+templ CurrentMatchOverlay(match *championship.Match) {
+	if match != nil {
+		<div class="m-0 flex items-center justify-center h-screen">
+			<div class="w-full absolute bottom-10 px-60 box-border flex justify-between items-center">
+				<div class="bg-[#8b0036] border-2 border-pink-300 h-20 w-full flex items-center justify-evenly relative">
+					<div class="text-white font-bold text-4xl flex items-center">
+						<span class="flex-grow">{ match.TeamA.Name }</span>
+					</div>
+					<div></div>
+					<div
+						class="w-24 h-24 rounded-full bg-white border-10 border-pink-300 flex items-center justify-center absolute left-1/2 transform -translate-x-1/2"
+					>
+						<img src="/campAssets/Estrelas Nascentes 2 Small.png" alt="Image" class="w-full h-full rounded-full"/>
+					</div>
+					<div class="text-white font-bold text-4xl flex items-center">
+						<span class="flex-grow">{ match.TeamB.Name }</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	} else {
+		<div></div>
+	}
+}

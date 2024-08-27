@@ -41,7 +41,7 @@ func (t *TwitchChatService) handleToken(token *twitch.TwitchAuth) error {
 	client := twitchChat.NewClient(t.channel, "oauth:"+token.AccessToken)
 
 	client.OnPrivateMessage(func(message twitchChat.PrivateMessage) {
-		logger.Debugf("Chat Message: %s", message.Message)
+		logger.Debugf("@%s: %s", message.User.DisplayName, message.Message)
 		events.Dispatch(&message)
 	})
 

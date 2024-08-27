@@ -2,6 +2,7 @@ package modules
 
 import (
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
+	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	"github.com/gempir/go-twitch-irc/v4"
 )
 
@@ -38,6 +39,8 @@ func (m *MessengerModule) handleTwitchClient(client *twitch.Client) error {
 }
 
 func (m *MessengerModule) handleMessage(msg *Message) error {
+	logger.Debugf("Sending message: %s", msg.msg)
+	logger.Debugf("client: %v", m.twitchClient)
 	if m.twitchClient == nil {
 		return nil
 	}

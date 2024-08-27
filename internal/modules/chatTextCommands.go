@@ -27,13 +27,15 @@ func (m *CommandsModule) handleCommand(msg *twitch.PrivateMessage) error {
 
 	switch msg.Message {
 	case "!camp":
-		response = "Participe do campeonato Estrelas Nascentes https://start.gg/estrelasnascentes"
+		response = "Campeonato Estrelas Nascentes dia 18 de Agosto! https://start.gg/estrelasnascentes"
 	case "!7tv":
 		response = "https://7tv.app/"
 	case "!desgoza", "!desgozar":
 		response = msg.User.Name + " desgozou a calça do chat"
 	case "!besito":
 		response = "Uno besito para ti! 😘"
+	case "!clt":
+		response = "Prayge desemprego nosso que estáis no Brasil impessa que minha CLT seja assinada, que as ofertas de empregos caiam por terra, amém Prayge"
 	}
 
 	if response != "" {

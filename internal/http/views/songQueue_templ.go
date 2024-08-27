@@ -25,7 +25,7 @@ func SongQueuePage(items []templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><a href=\"/\">Back home</a><h1>Song Queue Manager</h1><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" hx-swap=\"none\" hx-post=\"/songQueue/control/play\">play/pause</button> <button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" hx-swap=\"none\" hx-post=\"/songQueue/control/next\">next</button><form class=\"flex flex-row max-w-md my-10\" hx-swap=\"none\" hx-post=\"/songQueue/control/enqueue\"><input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" _=\"on htmx:afterSend put &#39;&#39; into #url.value\" type=\"text\" name=\"url\" id=\"url\"> <button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" type=\"submit\">Enqueue</button></form><h2>Quick access songs</h2><button _=\"on click put &#39;&#39; into #url.value\" class=\"bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" type=\"submit\">Clear</button> <button _=\"on click put &#39;https://www.youtube.com/watch?v=iW-8h-iRFME&#39; into #url.value\" class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" type=\"submit\">Hino</button><ul sse-swap=\"song_queue\" hx-swap=\"innerHTML\" id=\"song-queue\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<body><a href=\"/\">Back home</a><h1>Song Queue Manager</h1><button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" hx-swap=\"none\" hx-post=\"/songQueue/control/play\">play/pause</button> <button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" hx-swap=\"none\" hx-post=\"/songQueue/control/next\">next</button><form class=\"flex flex-row max-w-lg my-10\" hx-swap=\"none\" hx-post=\"/songQueue/control/enqueue\"><input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" _=\"on htmx:afterSend put &#39;&#39; into #url.value\" type=\"text\" name=\"url\" id=\"url\"> <button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-80\" type=\"submit\">Enqueue for MPV</button></form><form class=\"flex flex-row max-w-lg my-10\" hx-swap=\"none\" hx-post=\"/songQueue/queue/enqueue\"><input class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\" _=\"on htmx:afterSend put &#39;&#39; into #val.value\" type=\"text\" name=\"value\" id=\"val\"> <button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-80\" type=\"submit\">Add to queue</button></form><h2>Quick access songs</h2><button _=\"on click put &#39;&#39; into #url.value\" class=\"bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" type=\"submit\">Clear</button> <button _=\"on click put &#39;https://www.youtube.com/watch?v=iW-8h-iRFME&#39; into #url.value\" class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\" type=\"submit\">Hino</button><ul sse-swap=\"song_queue\" hx-swap=\"innerHTML\" id=\"song-queue\" hx-get=\"/songQueue/queue\" hx-trigger=\"every 1s\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -98,7 +98,7 @@ func SongQueueEntry(id string, artist string, title string, originalQuery string
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/songQueue/%s/swap/up", id))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 62, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 74, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -111,7 +111,7 @@ func SongQueueEntry(id string, artist string, title string, originalQuery string
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/songQueue/%s/swap/down", id))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 63, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 75, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -124,7 +124,7 @@ func SongQueueEntry(id string, artist string, title string, originalQuery string
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/songQueue/%s", id))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 64, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 76, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -137,7 +137,7 @@ func SongQueueEntry(id string, artist string, title string, originalQuery string
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(id)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 65, Col: 12}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 77, Col: 12}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -150,7 +150,7 @@ func SongQueueEntry(id string, artist string, title string, originalQuery string
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(artist)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 66, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 78, Col: 16}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -163,7 +163,7 @@ func SongQueueEntry(id string, artist string, title string, originalQuery string
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 68, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 80, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -176,7 +176,7 @@ func SongQueueEntry(id string, artist string, title string, originalQuery string
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("on click put '%s' into #url.value", originalQuery))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 69, Col: 77}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/http/views/songQueue.templ`, Line: 81, Col: 77}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {

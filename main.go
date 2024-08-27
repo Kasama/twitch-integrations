@@ -100,6 +100,9 @@ func main() {
 	modules.NewCommandsModule().Register()
 	modules.NewMediaPlayerModule().Register()
 	modules.NewBotBansModule(twitchUserId).Register()
+	modules.NewMessengerModule(twitchUsername).Register()
+	modules.NewApostaModule(twitchUserId).Register()
+	modules.NewOmegaStrikersModule().Register()
 	webEventsModule.Register()
 
 	// Register services

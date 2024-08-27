@@ -1,0 +1,82 @@
+package views
+
+import (
+	"github.com/Kasama/kasama-twitch-integrations/internal/http/championship"
+	"sort"
+)
+
+func sortKeys[V any](m map[string]V) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+templ ChampionshipControlPage(championship *championship.Championship) {
+	<body>
+		<a href="/">Back home</a>
+		<h1>Championship control</h1>
+		<main class="flex flex-col items-center">
+			@ChampionshipCurrentMatch(championship.CurrentMatch)
+			<section>
+				<span class="self-center text-lg">Setup Match</span>
+				<form class="flex flex-col items-center" hx-post="/championship/setupMatch" hx-target="closest body">
+					<div class="flex flex-row m-10">
+						<div>
+							<label for="teamA" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Team A:</label>
+							<select
+								id="teamA"
+								name="teamA"
+								size="11"
+								class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+							>
+								for _, team := range sortKeys(championship.AvailableTeams) {
+									<option value={ team }>{ team } </option>
+								}
+							</select>
+						</div>
+						<span class="px-5">vs</span>
+						<div>
+							<label for="teamB" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Team B:</label>
+							<select
+								id="teamB"
+								name="teamB"
+								size="11"
+								class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+							>
+								for _, team := range sortKeys(championship.AvailableTeams) {
+									<option value={ team }>{ team } </option>
+								}
+							</select>
+						</div>
+					</div>
+					<div class="flex flex-row justify-between">
+						<button
+							class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+							type="submit"
+							value="Submit"
+						>Save</button>
+						<button
+							class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+							hx-post="/championship/clearMatch"
+							hx-target="closest body"
+						>Clean Match</button>
+					</div>
+				</form>
+			</section>
+		</main>
+	</body>
+}
+
+templ ChampionshipCurrentMatch(match *championship.Match) {
+	<section>
+		<span>Current Match:</span>
+		if match != nil {
+			<span>{ match.TeamA.Name } vs { match.TeamB.Name }</span>
+		} else {
+			<span>No match</span>
+		}
+	</section>
+}

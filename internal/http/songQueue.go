@@ -25,6 +25,7 @@ func (h *SongQueueHandler) RegisterRoutes(e *echo.Group) {
 	e.DELETE("/:id", h.handleDeleteItem)
 	e.POST("/control/:action", h.handlePlayerAction)
 	e.POST("/:id/swap/:direction", h.handleSwapItem)
+	e.GET("/queue", h.handleGetQueue)
 }
 
 func NewSongQueueHandler(queue *db.Queue[modules.SongQueueItem]) *SongQueueHandler {
@@ -124,6 +125,12 @@ func (h *SongQueueHandler) QueueEntries() []templ.Component {
 	}
 	return is
 }
+
+func (h *SongQueueHandler) handleGetQueue(c echo.Context) error {
+	c.Set("skip-log", true)
+	return Render(c, http.StatusOK, views.SongQueue(h.QueueEntries()))
+}
+
 
 func (h *SongQueueHandler) handleQueue(c echo.Context) error {
 
