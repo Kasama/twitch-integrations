@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	// "log"
 	"os"
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/http"
@@ -16,36 +16,36 @@ import (
 func main() {
 	_ = godotenv.Load() // ignore errors
 
-	logger := log.Default()
+	// logger := log.Default()
 
 	twitchClientId, exists := os.LookupEnv("TWITCH_CLIENT_ID")
-	if !exists {
-		logger.Fatal("var TWITCH_CLIENT_ID not found")
-	}
+	// if !exists {
+	// 	logger.Fatal("var TWITCH_CLIENT_ID not found")
+	// }
 
 	twitchClientSecret, exists := os.LookupEnv("TWITCH_CLIENT_SECRET")
-	if !exists {
-		logger.Fatal("var TWITCH_CLIENT_SECRET not found")
-	}
+	// if !exists {
+	// 	logger.Fatal("var TWITCH_CLIENT_SECRET not found")
+	// }
 
 	twitchUsername, exists := os.LookupEnv("TWITCH_USERNAME")
-	if !exists {
-		logger.Fatal("var TWITCH_USERNAME not found")
-	}
+	// if !exists {
+	// 	logger.Fatal("var TWITCH_USERNAME not found")
+	// }
 
 	twitchUserId, exists := os.LookupEnv("TWITCH_USERID")
-	if !exists {
-		logger.Fatal("var TWITCH_USERID not found")
-	}
+	// if !exists {
+	// 	logger.Fatal("var TWITCH_USERID not found")
+	// }
 
 	spotifyClientId, exists := os.LookupEnv("SPOTIFY_CLIENT_ID")
-	if !exists {
-		logger.Fatal("var SPOTIFY_CLIENT_ID not found")
-	}
+	// if !exists {
+	// 	logger.Fatal("var SPOTIFY_CLIENT_ID not found")
+	// }
 
 	spotifyClientSecret, exists := os.LookupEnv("SPOTIFY_CLIENT_SECRET")
 	if !exists {
-		logger.Fatal("var SPOTIFY_CLIENT_SECRET not found")
+		// logger.Fatal("var SPOTIFY_CLIENT_SECRET not found")
 	}
 
 	environment, exists := os.LookupEnv("ENVIRONMENT")
@@ -60,16 +60,7 @@ func main() {
 
 	obsPassword, exists := os.LookupEnv("OBS_WS_PASSWORD")
 	if !exists {
-		logger.Fatal("var OBS_WS_PASSWORD not found")
-	}
-
-	t, exists := os.LookupEnv("STREAM_TEMP_DIR")
-	if !exists {
-		t = "twitch-streaming"
-	}
-	tmpDir, err := os.MkdirTemp("", t)
-	if err != nil {
-		logger.Fatalf("Could not create tempdir %s", tmpDir)
+		// logger.Fatal("var OBS_WS_PASSWORD not found")
 	}
 
 	appContext := context.Background()

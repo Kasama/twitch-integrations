@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
-	github.com/a-h/templ v0.2.680
+	github.com/a-h/templ v0.2.793
 	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/andreykaipov/goobs v1.3.0
 	github.com/badu/bus v1.0.3
@@ -22,7 +22,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/nicklaw5/helix/v2 v2.28.3
 	github.com/zmb3/spotify/v2 v2.4.2
-	golang.org/x/net v0.24.0
+	golang.org/x/net v0.28.0
 	golang.org/x/oauth2 v0.20.0
 )
 
@@ -48,12 +48,12 @@ require (
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
 	golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
