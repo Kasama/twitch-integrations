@@ -126,6 +126,7 @@ func (h *Handlers) RegisterRoutes() {
 	twitchHandler := NewTwitchHandler(h.twitchConfig)
 	spotifyHandler := NewSpotifyHandler(h.spotifyConfig)
 	songQueueHandler := NewSongQueueHandler(h.songQueue)
+	wordGameHandler := NewWordGameHandler()
 
 	// API routes
 	h.server.GET("/api/test", func(c echo.Context) error {
@@ -153,6 +154,7 @@ func (h *Handlers) RegisterRoutes() {
 	h.server.GET("/obs/background", HandleObsBackground)
 	h.server.GET("/sse", HandleSSEUI)
 	h.server.GET("/obsOverlay", HandleSSEUI)
+	h.server.GET("/wordgame", wordGameHandler.handleIndex)
 
 	championshipGroup := h.server.Group("/championship")
 	h.championship.RegisterRoutes(championshipGroup)
