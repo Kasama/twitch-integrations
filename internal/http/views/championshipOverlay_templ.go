@@ -181,7 +181,7 @@ func CurrentMatchOverlay(match *championship.Match) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span></div><div></div><div class=\"w-24 h-24 rounded-full bg-white border-10 border-pink-300 flex items-center justify-center absolute left-1/2 transform -translate-x-1/2\"><img src=\"/campAssets/Estrelas Nascentes 2 Small.png\" alt=\"Image\" class=\"w-full h-full rounded-full\"></div><div class=\"text-white font-bold text-4xl flex items-center\"><span class=\"flex-grow\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span></div><div></div><div class=\"w-24 h-24 rounded-full bg-white border-10 border-pink-300 flex items-center justify-center absolute left-1/2 transform -translate-x-1/2\"><img src=\"/campAssets/betacamp.png\" alt=\"Image\" class=\"w-full h-full rounded-full\"></div><div class=\"text-white font-bold text-4xl flex items-center\"><span class=\"flex-grow\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

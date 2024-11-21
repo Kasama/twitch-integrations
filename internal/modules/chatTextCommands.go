@@ -27,7 +27,7 @@ func (m *CommandsModule) handleCommand(msg *twitch.PrivateMessage) error {
 
 	switch msg.Message {
 	case "!camp":
-		response = "Campeonato Estrelas Nascentes dia 18 de Agosto! https://start.gg/estrelasnascentes"
+		response = "Copa Beta! Bora jogar um campeonato o mais proximo possivel do beta!? https://www.start.gg/copabetaos"
 	case "!7tv":
 		response = "https://7tv.app/"
 	case "!desgoza", "!desgozar":
@@ -36,6 +36,8 @@ func (m *CommandsModule) handleCommand(msg *twitch.PrivateMessage) error {
 		response = "Uno besito para ti! 😘"
 	case "!clt":
 		response = "Prayge desemprego nosso que estáis no Brasil impessa que minha CLT seja assinada, que as ofertas de empregos caiam por terra, amém Prayge"
+	case "!discord":
+		response = "https://discord.gg/KAJCTxzK7E"
 	}
 
 	if response != "" {

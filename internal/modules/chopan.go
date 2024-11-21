@@ -66,7 +66,7 @@ func (m *ChopanModule) resetPhrase() (string, error) {
 }
 
 func (m *ChopanModule) handleResetPhrase(msg *twitch.PrivateMessage) error {
-	if msg.User.Badges["broadcaster"] != 1 || (msg.Message != "!reset-phrase" && msg.Message != "!chopan") {
+	if msg.User.Badges["broadcaster"] != 1 || (msg.Message != "!reset-phrase" && msg.Message != "!reset-frase" && msg.Message != "!chopan") {
 		return nil
 	}
 

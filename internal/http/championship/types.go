@@ -20,48 +20,40 @@ type Match struct {
 func NewChampionship() *Championship {
 	return &Championship{
 		AvailableTeams: map[string]*Team{
-			"Nemesis": {
-				Name: "Nemesis",
+			"Grupo de Tudo": {
+				Name: "Grupo de Tudo",
 				Logo: "",
 			},
-			"Never Punished Squad": {
-				Name: "Never Punished Squad",
+			"Os come terra": {
+				Name: "Os come terra",
 				Logo: "",
 			},
-			"Flores Repetentes": {
-				Name: "Flores Repetentes",
+			"dispara ervilha": {
+				Name: "dispara ervilha",
 				Logo: "",
 			},
-			"Bazingers": {
-				Name: "Bazingers",
+			"Amamos Hentai": {
+				Name: "Amamos Hentai",
 				Logo: "",
 			},
-			"Clickbait": {
-				Name: "Clickbait",
+			"Eu amo Dandadan": {
+				Name: "Eu amo Dandadan",
 				Logo: "",
 			},
-			"Alérgicos a PL": {
-				Name: "Alérgicos a PL",
+			"Imperadores das Chamas": {
+				Name: "Imperadores das Chamas",
 				Logo: "",
 			},
-			"DDR 2nd Mix": {
-				Name: "DDR 2nd Mix",
+			"It's the end": {
+				Name: "It's the end",
 				Logo: "",
 			},
-			"Team 8": {
-				Name: "Team 8",
+			"Mains juno sem juno": {
+				Name: "Mains juno sem juno",
 				Logo: "",
 			},
-			"Genios da Bola": {
-				Name: "Genios da Bola",
-				Logo: "",
-			},
-			"Dezativado": {
-				Name: "Dezativado",
-				Logo: "",
-			},
-			"Bau Bau": {
-				Name: "Bau Bau",
+			"353 pipocas": {
+				Name: "353 pipocas",
 				Logo: "",
 			},
 		},

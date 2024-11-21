@@ -259,12 +259,21 @@ func (m *SpotifyModule) handleSkipTrackReward(reward *twitchEventSub.EventChanne
 		return nil
 	}
 
+	logger.Debugf("Bora skippar")
+
 	err := m.enqueueNext()
 	if err != nil {
+		logger.Debugf("Enqueue err is %+v", err)
 		return err
 	}
 
-	return m.client.Next(m.ctx)
+	logger.Debugf("pos enqueue")
+
+	err = m.client.Next(m.ctx)
+
+	logger.Debugf("err is: %+v", err)
+
+	return err
 }
 
 func (m *SpotifyModule) enqueueNext() error {
@@ -284,6 +293,7 @@ func (m *SpotifyModule) enqueueNext() error {
 
 	spotifyQueue, err := m.client.GetQueue(m.ctx)
 	if err != nil || len(spotifyQueue.Items) < 1 {
+		logger.Errorf("Failed to get queue %s", err)
 		return err
 	}
 
@@ -312,11 +322,13 @@ func (m *SpotifyModule) enqueueNext() error {
 
 func (m *SpotifyModule) handleTimer(t *time.Time) error {
 	if m.client == nil || m.ctx == nil {
+		logger.Debugf("falhou pq n tem client")
 		return nil
 	}
 
 	currentlyPlaying, err := m.client.PlayerCurrentlyPlaying(m.ctx)
 	if err != nil {
+		logger.Debugf("Falhou em pegar currentlyplayign: %s", err)
 		return err
 	}
 

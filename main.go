@@ -103,6 +103,7 @@ func main() {
 	modules.NewMessengerModule(twitchUsername).Register()
 	modules.NewApostaModule(twitchUserId).Register()
 	modules.NewOmegaStrikersModule().Register()
+	modules.NewReplayModule().Register()
 	webEventsModule.Register()
 
 	// Register services

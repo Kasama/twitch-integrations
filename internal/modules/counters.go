@@ -26,14 +26,14 @@ func intoCounterName(name string) (CounterName, error) {
 }
 
 type CountersModule struct {
-	db               *db.Database
-	channel          string
+	db      *db.Database
+	channel string
 }
 
 func NewCountersModule(channel string) *CountersModule {
 	return &CountersModule{
-		db:               nil,
-		channel:          channel,
+		db:      nil,
+		channel: channel,
 	}
 }
 
@@ -114,7 +114,9 @@ func (m *CountersModule) handleCommand(msg *twitch.PrivateMessage) error {
 }
 
 func (m *CountersModule) handleKasamadaMessage(msg *twitch.PrivateMessage) error {
-	if _, ok := msg.User.Badges["broadcaster"]; !ok {
+	_, isMod := msg.User.Badges["moderator"]
+	_, isBroadcaster := msg.User.Badges["broadcaster"]
+	if !isBroadcaster && !isMod {
 		return nil
 	}
 
