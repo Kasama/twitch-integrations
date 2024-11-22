@@ -1,24 +1,79 @@
 package modules
 
 import (
+	"fmt"
+	"net"
+	"os/exec"
+	"syscall"
+	"time"
+
 	"github.com/Kasama/kasama-twitch-integrations/internal/events"
+	"github.com/Kasama/kasama-twitch-integrations/internal/logger"
 	mediaplayer "github.com/Kasama/kasama-twitch-integrations/internal/modules/mediaPlayer"
+	"github.com/blang/mpv"
 )
+
+const mpvPlayerSocketPath = "/tmp/streamMusicMPVSocket"
 
 type MediaPlayerModule struct {
 	spotifyPlayer *mediaplayer.SpotifyPlayer
 	youtubePlayer *mediaplayer.YoutubePlayer
 }
 
+func launchDetachedMPV() {
+	cmd := exec.Command("mpv", "--no-video", "--idle=yes", "--input-ipc-server="+mpvPlayerSocketPath)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+	if err := cmd.Start(); err != nil {
+		logger.Errorf("Failed to start mpv: %s", err.Error())
+	}
+}
+
+func connectToRunningMPV() (*mpv.Client, error) {
+	timeout := time.Now().Add(1 * time.Second)
+	for {
+		if time.Now().After(timeout) {
+			return nil, fmt.Errorf("Timeout waiting for mpv to start")
+		}
+		_, err := net.Dial("unix", mpvPlayerSocketPath)
+		if err == nil {
+			break
+		}
+		logger.Debugf("Waiting for mpv to start")
+		time.Sleep(50 * time.Millisecond)
+	}
+
+	ipc := mpv.NewIPCClient(mpvPlayerSocketPath)
+	player := mpv.NewClient(ipc)
+	return player, nil
+}
+
 func NewMediaPlayerModule() *MediaPlayerModule {
+	// Try to use existing running mpv instance
+	mpvClient, err := connectToRunningMPV()
+	if err != nil {
+		// If it's not possible, launch a new mpv and try to connect to it
+		launchDetachedMPV()
+		mpvClient, err = connectToRunningMPV()
+		if err != nil {
+			logger.Errorf("Could not connect to a running MPV instance and failed to launch a new one")
+			return &MediaPlayerModule{}
+		}
+	}
+
 	return &MediaPlayerModule{
 		spotifyPlayer: &mediaplayer.SpotifyPlayer{},
-		youtubePlayer: &mediaplayer.YoutubePlayer{},
+		youtubePlayer: mediaplayer.NewYoutubePlayer(mpvClient),
 	}
 }
 
 // Enqueue implements mediaplayer.MediaPlayer.
 func (m *MediaPlayerModule) Enqueue(query string, priority mediaplayer.Priority) error {
+	return m.youtubePlayer.Enqueue(query, "Kasama", priority)
+}
+
+func (m *MediaPlayerModule) EnqueueAnything(query string, priority mediaplayer.Priority) error {
 	// if strings.Contains(query, "open.spotify.com") {
 	// 	m.spotifyPlayer.Enqueue(query, priority)
 	// 	// https://open.spotify.com/track/0a7BloCiNzLDD9qSQHh5m7?si=c73c611b98a142ad
@@ -108,10 +163,21 @@ func (m *MediaPlayerModule) Register() {
 var _ events.EventHandler = &MediaPlayerModule{}
 
 func (m *MediaPlayerModule) handleEnqueueEvent(event *mediaplayer.Event) error {
+	logger.Debugf("Triggered event for mediaplayer: %+v", event)
+	if m.youtubePlayer == nil {
+		logger.Debug("Rejecting media palyer event because player is nil")
+		return nil
+	}
+	playing, err := m.youtubePlayer.PlayingInfo()
+	logger.Debugf("Now: %s, %+v", playing, err)
+
 	switch event.Intent {
 	case mediaplayer.MediaIntentPlay:
+		return m.youtubePlayer.PlayPause()
 	case mediaplayer.MediaIntentPause:
+		return m.youtubePlayer.Pause()
 	case mediaplayer.MediaIntentNext:
+		return m.youtubePlayer.Next()
 	case mediaplayer.MediaIntentEnqueue:
 		return m.Enqueue(event.EnqueueQuery, mediaplayer.PRIORITY_NORMAL)
 	case mediaplayer.MediaIntentPriorityEnqueue:

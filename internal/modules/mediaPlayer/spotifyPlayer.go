@@ -74,6 +74,11 @@ func (s *SpotifyPlayer) Play() error {
 	return s.client.Play(s.ctx)
 }
 
+// Play implements MediaPlayer.
+func (s *SpotifyPlayer) PlayPause() error {
+	return s.client.Play(s.ctx)
+}
+
 // PlayingInfo implements MediaPlayer.
 func (s *SpotifyPlayer) PlayingInfo() (string, error) {
 	currentlyPlaying, err := s.client.PlayerCurrentlyPlaying(s.ctx)
@@ -90,7 +95,7 @@ func (s *SpotifyPlayer) TimeLeft() (time.Duration, error) {
 	if err != nil {
 		return 0, err
 	}
-	milisRemaining := (currentlyPlaying.Item.Duration-currentlyPlaying.Progress)
+	milisRemaining := (currentlyPlaying.Item.Duration - currentlyPlaying.Progress)
 	return time.Duration(milisRemaining) * time.Millisecond, nil
 }
 

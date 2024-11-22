@@ -8,6 +8,7 @@ import (
 type MediaPlayer interface {
 	Play() error
 	Pause() error
+	PlayPause() error
 	Next() error
 	Enqueue(query string, requester string, priority Priority) error
 	TimeLeft() (time.Duration, error)

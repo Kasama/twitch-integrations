@@ -113,7 +113,7 @@ func (m *AudioModule) Register() {
 	events.Register(m.handleStop)
 	events.Register(m.handlePlayAudio)
 	events.Register(m.handleDebugCommand)
-	events.Register(m.handleMediaPlayerEvent)
+	// events.Register(m.handleMediaPlayerEvent)
 
 	err := speaker.Init(usualMP3SampleRate, usualMP3SampleRate.N(time.Second/10))
 	if err != nil {

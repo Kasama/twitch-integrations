@@ -23,6 +23,7 @@ func NewYoutubePlayer(client *mpv.Client) *YoutubePlayer {
 
 // Enqueue implements MediaPlayer.
 func (y *YoutubePlayer) Enqueue(query string, requester string, priority Priority) error {
+	// Add to the end of the queue and start playback if it's not currently playing
 	_, err := y.player.Exec("loadfile", query, "insert-at-play", -1)
 	if err != nil {
 		return err
@@ -71,6 +72,18 @@ func (y *YoutubePlayer) Pause() error {
 // Play implements MediaPlayer.
 func (y *YoutubePlayer) Play() error {
 	return y.player.SetPause(false)
+}
+
+func (y *YoutubePlayer) PlayPause() error {
+	paused, err := y.player.Pause()
+	if err != nil {
+		return err
+	}
+	err = y.player.SetPause(!paused)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // PlayingInfo implements MediaPlayer.
