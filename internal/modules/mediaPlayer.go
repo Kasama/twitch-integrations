@@ -62,9 +62,14 @@ func NewMediaPlayerModule() *MediaPlayerModule {
 		}
 	}
 
+	player, err := mediaplayer.NewYoutubePlayer(mpvClient, []string{
+		"https://youtube.com/watch?v=h0OK2oOG1no",
+		"https://youtube.com/watch?v=dzS_RjNemCQ",
+	})
+
 	return &MediaPlayerModule{
 		spotifyPlayer: &mediaplayer.SpotifyPlayer{},
-		youtubePlayer: mediaplayer.NewYoutubePlayer(mpvClient),
+		youtubePlayer: player,
 	}
 }
 
@@ -157,7 +162,7 @@ func (m *MediaPlayerModule) EnqueueAnything(query string, priority mediaplayer.P
 }
 
 func (m *MediaPlayerModule) Register() {
-	events.Register(m.handleEnqueueEvent)
+	// events.Register(m.handleEnqueueEvent)
 }
 
 var _ events.EventHandler = &MediaPlayerModule{}

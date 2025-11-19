@@ -3,6 +3,7 @@ package views
 import (
 	"fmt"
 	"github.com/Kasama/kasama-twitch-integrations/internal/http/championship"
+	"strings"
 )
 
 templ ChampionshipOverlay() {
@@ -26,7 +27,11 @@ templ RenderAwakenings(awakenings []string) {
 				</div>
 			}
 			for _, awakening := range awakenings {
-				<img class="w-40" src={ fmt.Sprintf("/awakening/%s", awakening) }/>
+				if strings.HasPrefix(awakening, "http") {
+					<img class="w-40" src={ awakening }/>
+				} else {
+					<img class="w-40" src={ fmt.Sprintf("/awakening/%s", awakening) }/>
+				}
 			}
 		</div>
 	</div>
@@ -36,19 +41,37 @@ templ CurrentMatchOverlay(match *championship.Match) {
 	if match != nil {
 		<div class="m-0 flex items-center justify-center h-screen">
 			<div class="w-full absolute bottom-10 px-60 box-border flex justify-between items-center">
-				<div class="bg-[#8b0036] border-2 border-pink-300 h-20 w-full flex items-center justify-evenly relative">
-					<div class="text-white font-bold text-4xl flex items-center">
-						<span class="flex-grow">{ match.TeamA.Name }</span>
+				<div class="flex flex-row w-full">
+					if match.TeamA.Logo != "" {
+						<img
+							src={ match.TeamA.Logo }
+							class="w-20 h-20 rounded-full z-10 border-white border-2"
+							style="margin-right: -3rem"
+							alt="Team A Logo"
+						/>
+					}
+					<div class="bg-[#8b0036] border-2 border-pink-300 h-20 w-full flex items-center justify-evenly relative">
+						<div class="text-white font-bold text-4xl flex items-center">
+							<span class="flex-grow">{ match.TeamA.Name }</span>
+						</div>
+						<div></div>
+						<div
+							class="w-24 h-24 rounded-full bg-white border-10 border-pink-300 flex items-center justify-center absolute left-1/2 transform -translate-x-1/2"
+						>
+							<img src="/campAssets/Estrelas Nascentes 3 Small.png" alt="Image" class="w-full h-full rounded-full"/>
+						</div>
+						<div class="text-white font-bold text-4xl flex items-center">
+							<span class="flex-grow">{ match.TeamB.Name }</span>
+						</div>
 					</div>
-					<div></div>
-					<div
-						class="w-24 h-24 rounded-full bg-white border-10 border-pink-300 flex items-center justify-center absolute left-1/2 transform -translate-x-1/2"
-					>
-						<img src="/campAssets/betacamp.png" alt="Image" class="w-full h-full rounded-full"/>
-					</div>
-					<div class="text-white font-bold text-4xl flex items-center">
-						<span class="flex-grow">{ match.TeamB.Name }</span>
-					</div>
+					if match.TeamB.Logo != "" {
+						<img
+							src={ match.TeamB.Logo }
+							class="w-20 h-20 rounded-full z-10 border-white border-2"
+							style="margin-left: -3rem"
+							alt="Team B Logo"
+						/>
+					}
 				</div>
 			</div>
 		</div>

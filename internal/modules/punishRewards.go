@@ -9,7 +9,7 @@ import (
 	"github.com/nicklaw5/helix/v2"
 )
 
-const rewardIDPunish = ""
+const rewardIDPunish = "96932eac-5561-42f2-a1dc-095f1ed54c4e"
 const punishDuration = 5 * time.Minute
 const punishThreshold = -5 * time.Minute
 

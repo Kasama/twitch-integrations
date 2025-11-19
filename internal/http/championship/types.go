@@ -20,41 +20,45 @@ type Match struct {
 func NewChampionship() *Championship {
 	return &Championship{
 		AvailableTeams: map[string]*Team{
-			"Grupo de Tudo": {
-				Name: "Grupo de Tudo",
+			"Dragões do Midfield": {
+				Name: "Dragões do Midfield",
+				Logo: "/campAssets/DragoesDoMidfield.png",
+			},
+			"Cinzenta Fan Clube": {
+				Name: "Cinzenta Fan Clube",
 				Logo: "",
 			},
-			"Os come terra": {
-				Name: "Os come terra",
+			"DST | DISTINTOS SEM TENTAÇÃO": {
+				Name: "DST",
 				Logo: "",
 			},
-			"dispara ervilha": {
-				Name: "dispara ervilha",
+			"Ku Com K": {
+				Name: "KCK",
+				Logo: "/campAssets/kck.webp",
+			},
+			"HIV": {
+				Name: "HIV",
 				Logo: "",
 			},
-			"Amamos Hentai": {
-				Name: "Amamos Hentai",
+			"Marmotes": {
+				Name: "Marmotes",
+				Logo: "/campAssets/marmotes.webp",
+			},
+			"Los Pitufos": {
+				Name: "Los Pitufos",
 				Logo: "",
 			},
-			"Eu amo Dandadan": {
-				Name: "Eu amo Dandadan",
-				Logo: "",
+			"Amigos do Fut": {
+				Name: "Amigos do Fut",
+				Logo: "/campAssets/amigosdofut.webp",
 			},
-			"Imperadores das Chamas": {
-				Name: "Imperadores das Chamas",
-				Logo: "",
+			"Play Better Win More | PBWM": {
+				Name: "PBWM",
+				Logo: "/campAssets/pbwm.webp",
 			},
-			"It's the end": {
-				Name: "It's the end",
-				Logo: "",
-			},
-			"Mains juno sem juno": {
-				Name: "Mains juno sem juno",
-				Logo: "",
-			},
-			"353 pipocas": {
-				Name: "353 pipocas",
-				Logo: "",
+			"Maxi Cocido": {
+				Name: "Maxi Cocido",
+				Logo: "/campAssets/maxicocido.webp",
 			},
 		},
 		CurrentMatch: nil,

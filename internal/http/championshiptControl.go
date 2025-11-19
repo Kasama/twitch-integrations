@@ -48,8 +48,14 @@ func (h *ChampionshipControlHandler) handleClearMatch(c echo.Context) error {
 
 func (h *ChampionshipControlHandler) handleStarting(c echo.Context) error {
 	c.Set("skip-log", true)
-	t := time.Until(time.Unix(1724007600, 0))
-	return Render(c, http.StatusOK, views.Page("Starting", views.ChampionshipWaiting(t)))
+	t := time.Until(time.Unix(1757790000, 0))
+	var s string
+	if t < 0 {
+		s = "breve"
+	} else {
+		s = t.Round(time.Second).String()
+	}
+	return Render(c, http.StatusOK, views.Page("Starting", views.ChampionshipWaiting(s)))
 }
 
 func (h *ChampionshipControlHandler) handleSetupTeam(c echo.Context) error {

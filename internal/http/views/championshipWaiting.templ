@@ -1,11 +1,7 @@
 package views
 
-import (
-	"time"
-)
-
-templ ChampionshipWaiting(t time.Duration) {
+templ ChampionshipWaiting(t string) {
 	<body hx-trigger="every 1s" hx-get="/championship/starting" hx-swap="outerHTML">
-		<h1 class="text-8xl mt-80 m-10 text-white">Iniciando em { t.Round(time.Second).String() }</h1>
+		<h1 class="text-8xl mt-80 m-10 text-white">Iniciando em { t }</h1>
 	</body>
 }

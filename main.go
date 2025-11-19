@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	// "log"
+	"fmt"
 	"os"
 
 	"github.com/Kasama/kasama-twitch-integrations/internal/http"
@@ -66,7 +66,7 @@ func main() {
 	appContext := context.Background()
 
 	twitchConfig := twitch.NewTwitchConfig(twitchClientId, twitchClientSecret, twitchUserId, twitchUsername, "http://localhost:3000/auth/twitch/redirect")
-	spotifyConfig := spotify.NewSpotifyConfig(spotifyClientId, spotifyClientSecret, "http://localhost:3000/auth/spotify/redirect")
+	spotifyConfig := spotify.NewSpotifyConfig(spotifyClientId, spotifyClientSecret, "http://127.0.0.1:3000/auth/spotify/redirect")
 	webEventsModule := modules.NewWebEventsModule()
 	spotifyModule := modules.NewSpotifyModule(appContext, twitchUsername)
 
@@ -95,7 +95,10 @@ func main() {
 	modules.NewApostaModule(twitchUserId).Register()
 	modules.NewOmegaStrikersModule().Register()
 	modules.NewReplayModule().Register()
+	modules.NewMalboroRushModule(twitchUserId).Register()
 	webEventsModule.Register()
+
+	fmt.Println("started modules")
 
 	// Register services
 	services.NewTwitchChatService(twitchUsername).Register()
@@ -105,6 +108,12 @@ func main() {
 	services.NewSpotifyService(appContext, spotifyConfig).Register()
 	services.NewOmegaStrikersService(appContext).Register()
 
+	fmt.Println("started services")
+
 	// Start server
-	_ = http.NewHandlers(environment, twitchConfig, spotifyConfig, webEventsModule, spotifyModule.Queue()).Start("0.0.0.0", "3000")
+	fmt.Println("starting http server")
+	err := http.NewHandlers(environment, twitchConfig, spotifyConfig, webEventsModule, spotifyModule.Queue()).Start("0.0.0.0", "3000")
+	if err != nil {
+		fmt.Println("HTTP server failed: ", err)
+	}
 }
